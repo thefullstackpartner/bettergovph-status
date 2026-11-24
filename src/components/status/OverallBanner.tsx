@@ -61,7 +61,16 @@ const OverallBanner: FC<Props> = ({
       <div>
         <Eyebrow tone="onDark">Overall Status</Eyebrow>
         <h1 className="mt-1 font-serif-ed text-2xl font-bold tracking-tight text-white max-md:text-xl">
-          {title}
+          {hasDown && !allUnknown ? (
+            <>
+              <span className="inline-block bg-white px-2 py-0.5 text-ed-red">
+                {counts.down}
+              </span>{' '}
+              {counts.down === 1 ? 'service' : 'services'} currently down
+            </>
+          ) : (
+            title
+          )}
         </h1>
         <div className="mt-3 flex flex-wrap items-center gap-2 font-sans-ed text-xs">
           <button

@@ -27,7 +27,9 @@ describe('status UI components', () => {
         onFilterStatus={onFilterStatus}
       />
     );
-    expect(screen.getByText('1 service currently down')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /1 service currently down/i })
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '1 down' }));
     expect(onFilterStatus).toHaveBeenCalledWith('down');

@@ -67,8 +67,12 @@ describe('Worker Hono API', () => {
     expect(await res.json()).toEqual({ error: 'Monitor not found' });
   });
 
-  it('returns 403 for POST /api/trigger when disabled', async () => {
-    const res = await app.request('/api/trigger', { method: 'POST' }, baseEnv);
+  it('returns 403 for POST /api/trigger in deployed environments without secret', async () => {
+    const res = await app.request(
+      'https://bettergovph-status.workers.dev/api/trigger',
+      { method: 'POST' },
+      baseEnv
+    );
     expect(res.status).toBe(403);
     expect(await res.json()).toEqual({ error: 'Manual trigger is disabled' });
   });
