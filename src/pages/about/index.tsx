@@ -59,8 +59,13 @@ const AboutPage: FC = () => {
             </li>
             <li>
               <strong>Degraded:</strong> Reachable, but response took longer
-              than 3,000 ms, or returned HTTP <code>403</code> from a WAF/bot
-              challenge (shown as <strong>Probe Blocked (WAF)</strong>).
+              than 3,000 ms.
+            </li>
+            <li>
+              <strong>Probe Blocked (WAF):</strong> Returned HTTP{' '}
+              <code>403</code> from a WAF/bot challenge. Displayed separately
+              from Degraded—the portal may still be accessible normally in a
+              browser, so it is not counted as down.
             </li>
             <li>
               <strong>Down:</strong> Timeout (15 s), DNS/TLS/connection failure,
