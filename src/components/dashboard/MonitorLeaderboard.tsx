@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpDownIcon, SearchIcon } from 'lucide-react';
 import type { CategoryPerformance, MonitorPerformanceRow } from '../../types';
@@ -36,6 +36,10 @@ const MonitorLeaderboard: FC<Props> = ({
   const [sortBy, setSortBy] = useState<TableSortKey>('availabilityPct');
   const [sortAsc, setSortAsc] = useState(true);
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCategory]);
 
   const spotlightRows = useMemo(() => {
     switch (spotlight) {
@@ -153,7 +157,7 @@ const MonitorLeaderboard: FC<Props> = ({
         ))}
       </div>
 
-      <div className="mt-8">
+      <div id="monitor-leaderboard" className="mt-8 scroll-mt-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <SectionHeader
             label="Full Monitor Leaderboard"

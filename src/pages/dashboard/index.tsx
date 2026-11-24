@@ -112,7 +112,12 @@ const DashboardPage: FC = () => {
           <DashboardKpiStrip
             kpis={data.kpis}
             days={data.days}
-            onSelectCategory={slug => setSelectedCategory(slug)}
+            onSelectCategory={slug => {
+              setSelectedCategory(slug);
+              document
+                .getElementById('monitor-leaderboard')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
           />
 
           <DashboardTrendCharts dailyTrend={data.dailyTrend} days={data.days} />
