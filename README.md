@@ -1,0 +1,121 @@
+# BetterGovPH Status
+
+Source code of **BetterGovPH Status**, an edge-native uptime and performance monitor for Philippine government online portals and services — built on Cloudflare Workers and Supabase, following the design system and repository structure of [BetterGov.ph](https://github.com/bettergovph/bettergov).
+
+## About this project
+
+BetterGovPH Status tracks the availability and latency of critical citizen-facing portals (such as BIR, SSS, PhilHealth, Pag-IBIG, PSA, DFA, and LTO) alongside agency websites from the BetterGov.ph directory.
+
+Goals:
+
+- Real-time visibility into Philippine government online service availability
+- Edge-native execution on Cloudflare Workers with low operational cost
+- Transparent, open-source monitor definitions reviewed via pull requests
+- Accessible, readable public status UI matching the BetterGov.ph design system
+- Extensible check architecture ready for keyword, TLS, DNS, and TCP checks
+
+## Features
+
+- Tiered check intervals: **5 minutes** for critical citizen portals, **15 minutes** for standard agency websites
+- Uptime Kuma-style 45-day / 90-day uptime bars and response-time charts (`24h`, `7d`, `30d`, `90d`)
+- 2-strike incident detection (opens on 2 consecutive `down` checks, resolves on 2 consecutive non-down checks)
+- Data-as-code monitor definitions validated by JSON Schema
+- Cached KV snapshots so public traffic never hits the database directly
+
+## How to Run
+
+```bash
+# Install packages
+npm install
+
+# Copy local Worker secrets (already pre-configured for local Supabase)
+cp .dev.vars.example .dev.vars
+
+# Apply database migrations to local Supabase (bgovph_* objects only)
+npm run db:migrate:local
+```
+
+Start the frontend and the Worker in two terminals:
+
+```bash
+# Terminal 1 — Cloudflare Worker on 127.0.0.1:5525
+npm run functions:dev
+
+# Terminal 2 — Vite SPA on http://localhost:5125 (proxies /api/* to Worker)
+npm run dev
+```
+
+**Access the application at:** `http://localhost:5125`
+
+### Triggering checks locally
+
+Local development does not run the 5-minute cron automatically. You can trigger a check cycle manually in any of three ways:
+
+1. Click **Run Critical Checks** in the local dev banner on the homepage.
+2. Run `npm run check:trigger` for a one-off run, or `npm run check:watch` to run checks automatically every 5 minutes (`npm run check:watch -- --all` also cycles through standard monitors every 15 minutes).
+3. Call Wrangler's scheduled endpoint: `curl "http://127.0.0.1:5525/__scheduled?cron=*/5+*+*+*+*"`
+
+## Monitor data
+
+Monitor definitions live in committed JSON files validated by JSON Schema:
+
+| File | Holds | Schema |
+| --- | --- | --- |
+| `src/data/categories.json` | Category taxonomy | `src/data/schema/categories.schema.json` |
+| `src/data/monitors/curated.json` | High-traffic citizen portals (`critical` tier, 5m) | `src/data/schema/monitors.schema.json` |
+| `src/data/monitors/imported/*.json` | Agency sites imported from BetterGov (`standard` tier, 15m) | `src/data/schema/monitors.schema.json` |
+
+Edit them in a pull request like any other data file. Validate locally with:
+
+```bash
+npm run validate:data
+```
+
+See [the monitor data notes](src/data/monitors/README.md) for field rules, naming conventions, and agency opt-out instructions.
+
+## Importing from BetterGov
+
+`npm run import:websites` reads `websites.json` from [bettergovph/bettergov](https://github.com/bettergovph/bettergov), normalizes URLs to `https://`, deduplicates against `curated.json`, maps BetterGov `type` values to our categories, and writes deterministic sorted files under `src/data/monitors/imported/`.
+
+```bash
+# Refresh from GitHub
+npm run import:websites
+
+# Refresh from a local clone and probe each URL once
+npm run import:websites -- --input ../bettergov/src/data/websites.json --probe
+```
+
+## Database (Supabase)
+
+All database objects use the `bgovph_` prefix so local development can safely share a local Supabase instance without touching existing tables. Raw checks are retained for **30 days** and pruned by a daily Worker cron; daily rollups (`bgovph_daily_stats`) are kept indefinitely.
+
+See [the Supabase notes](supabase/README.md) for local reset (`npm run db:down:local`) and staging/production setup.
+
+## Deploying
+
+1. Create dedicated Supabase projects for staging and production (Singapore region recommended).
+2. Apply `supabase/migrations/20261124000000_bgovph_init.sql` to each project.
+3. Provision a Cloudflare KV namespace (`STATUS_KV`) and Queue (`CHECK_QUEUE`), and add their IDs to `wrangler.jsonc`.
+4. Set secrets with `wrangler secret put SUPABASE_URL` and `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`.
+5. Deploy:
+
+```bash
+npm run deploy
+```
+
+## Testing
+
+This project uses Vitest for unit/data tests and Playwright (with axe-core) for end-to-end and accessibility tests. See [the Testing Guide](./TESTING.md).
+
+## Contributing
+
+Contributions are welcome — new monitor proposals, URL corrections, check types, UI improvements, and documentation. Please see [the Contributing Guide](./CONTRIBUTING.md).
+
+## Code of Conduct
+
+Please read our [Code of Conduct](./CODE_OF_CONDUCT.md) before participating.
+
+## License
+
+- **Code** is released under the [MIT License](./LICENSE).
+- **Imported directory data** is adapted from [bettergovph/bettergov](https://github.com/bettergovph/bettergov), whose content is published under CC BY-NC-ND 4.0.

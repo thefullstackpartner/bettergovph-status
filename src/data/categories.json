@@ -1,0 +1,72 @@
+[
+  {
+    "slug": "tax-revenue",
+    "name": "Tax & Revenue",
+    "description": "Internal revenue, customs, and e-filing portals."
+  },
+  {
+    "slug": "social-security",
+    "name": "Social Security & Housing",
+    "description": "SSS, GSIS, Pag-IBIG, and member contribution portals."
+  },
+  {
+    "slug": "health",
+    "name": "Health",
+    "description": "PhilHealth and Department of Health online services."
+  },
+  {
+    "slug": "identity-civil-registry",
+    "name": "Identity & Civil Registry",
+    "description": "PSA civil registry, PhilSys, and NBI clearance systems."
+  },
+  {
+    "slug": "travel-immigration",
+    "name": "Travel & Immigration",
+    "description": "DFA passport appointment and Bureau of Immigration eTravel."
+  },
+  {
+    "slug": "transport",
+    "name": "Transport & Licensing",
+    "description": "LTO LTMS and public transport regulatory portals."
+  },
+  {
+    "slug": "business-trade",
+    "name": "Business, Trade & Procurement",
+    "description": "DTI business registration, SEC eSPARC, and PhilGEPS."
+  },
+  {
+    "slug": "disaster-weather",
+    "name": "Disaster & Weather",
+    "description": "PAGASA, PHIVOLCS, and NDRRMC hazard advisories."
+  },
+  {
+    "slug": "education",
+    "name": "Education & Civil Service",
+    "description": "DepEd, CHED, and Civil Service Commission portals."
+  },
+  {
+    "slug": "government-portals",
+    "name": "National Portals",
+    "description": "eGovPH, GOV.PH, Official Gazette, and COMELEC."
+  },
+  {
+    "slug": "executive",
+    "name": "Executive Agencies",
+    "description": "Departments, bureaus, and attached executive agencies."
+  },
+  {
+    "slug": "constitutional-sucs",
+    "name": "Constitutional & State Universities",
+    "description": "Constitutional commissions and state universities and colleges."
+  },
+  {
+    "slug": "diplomatic",
+    "name": "Diplomatic & Foreign Service",
+    "description": "Philippine embassies, consulates, and missions abroad."
+  },
+  {
+    "slug": "legislative",
+    "name": "Legislative",
+    "description": "Senate and House of Representatives portals."
+  }
+]

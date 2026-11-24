@@ -1,0 +1,238 @@
+import { FC, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { RefreshCwIcon, SearchIcon } from 'lucide-react';
+import {
+  Button,
+  Container,
+  Notice,
+  Pagination,
+  SectionHeader,
+} from '../components/ui';
+import { MonitorRow, OverallBanner } from '../components/status';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useSummary } from '../hooks/useSummary';
+import { triggerManualCheck } from '../lib/api';
+
+const PAGE_SIZE = 25;
+
+const Home: FC = () => {
+  useDocumentTitle('BetterGovPH Status | Philippine Government Service Uptime');
+  const { data, loading, error, reload } = useSummary();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [triggering, setTriggering] = useState(false);
+  const [triggerMsg, setTriggerMsg] = useState<string | null>(null);
+  const [granularity, setGranularity] = useState<'hourly' | 'daily'>('hourly');
+
+  const query = searchParams.get('q') ?? '';
+  const category = searchParams.get('category') ?? 'all';
+  const statusFilter = searchParams.get('status') ?? 'all';
+  const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
+
+  const updateParam = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (!value || value === 'all') next.delete(key);
+    else next.set(key, value);
+    if (key !== 'page') next.delete('page');
+    setSearchParams(next);
+  };
+
+  const filteredMonitors = useMemo(() => {
+    if (!data) return [];
+    const q = query.trim().toLowerCase();
+    return data.monitors.filter(m => {
+      if (category !== 'all' && m.category !== category) return false;
+      if (statusFilter === 'critical' && m.tier !== 'critical') return false;
+      if (
+        statusFilter !== 'all' &&
+        statusFilter !== 'critical' &&
+        m.status !== statusFilter
+      ) {
+        return false;
+      }
+      if (q) {
+        const hay =
+          `${m.name} ${m.agency} ${m.department ?? ''} ${m.url}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [data, query, category, statusFilter]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredMonitors.length / PAGE_SIZE)
+  );
+  const safePage = Math.min(page, totalPages);
+  const pagedMonitors = filteredMonitors.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
+  );
+
+  const handleManualTrigger = async () => {
+    setTriggering(true);
+    setTriggerMsg(null);
+    try {
+      const res = await triggerManualCheck('critical');
+      setTriggerMsg(
+        `Checked ${res.scheduledCount} critical portals (${res.mode} mode).`
+      );
+      await reload();
+    } catch (err) {
+      setTriggerMsg(
+        err instanceof Error ? err.message : 'Manual trigger failed.'
+      );
+    } finally {
+      setTriggering(false);
+    }
+  };
+
+  return (
+    <Container className="py-8">
+      {loading && !data && (
+        <div className="border border-ed-rule bg-ed-paper-2 p-8 font-sans-ed text-sm text-ed-ink-3">
+          Loading status snapshot...
+        </div>
+      )}
+
+      {error && (
+        <Notice tone="error" className="mb-6">
+          Could not load status data: {error}. Make sure the Worker is running
+          with <code>npm run functions:dev</code>.
+        </Notice>
+      )}
+
+      {data && (
+        <>
+          <OverallBanner summary={data} />
+
+          {import.meta.env.DEV && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border border-ed-rule bg-ed-paper-2 px-4 py-3">
+              <span className="font-mono-ed text-xs text-ed-ink-2">
+                Local dev: cron is paused. Trigger a check cycle manually.
+              </span>
+              <div className="flex items-center gap-3">
+                {triggerMsg && (
+                  <span className="font-mono-ed text-xs text-ed-navy">
+                    {triggerMsg}
+                  </span>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleManualTrigger}
+                  disabled={triggering}
+                >
+                  <RefreshCwIcon
+                    size={14}
+                    className={triggering ? 'animate-spin' : ''}
+                  />
+                  <span>
+                    {triggering ? 'Checking...' : 'Run Critical Checks'}
+                  </span>
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <section className="mt-8" aria-label="Filter monitored portals">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <SectionHeader
+                label="Monitored Portals"
+                meta={`${filteredMonitors.length} of ${data.monitors.length} shown`}
+                className="mb-0"
+              />
+              <div
+                className="flex gap-1.5"
+                role="group"
+                aria-label="Uptime bar granularity"
+              >
+                <Button
+                  size="sm"
+                  variant={granularity === 'hourly' ? 'solid' : 'ghost'}
+                  onClick={() => setGranularity('hourly')}
+                >
+                  24h Hourly
+                </Button>
+                <Button
+                  size="sm"
+                  variant={granularity === 'daily' ? 'solid' : 'ghost'}
+                  onClick={() => setGranularity('daily')}
+                >
+                  45d Daily
+                </Button>
+              </div>
+            </div>
+
+            <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-[1fr_240px_180px]">
+              <div className="relative">
+                <SearchIcon
+                  size={16}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ed-ink-3"
+                />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={e => updateParam('q', e.target.value)}
+                  aria-label="Search portals or agencies"
+                  placeholder="Search portal, agency, or URL..."
+                  className="h-11 w-full border border-ed-rule-strong bg-white pl-9 pr-3 font-sans-ed text-sm text-ed-ink outline-none placeholder:text-ed-ink-4 focus:border-ed-navy"
+                />
+              </div>
+
+              <select
+                aria-label="Filter by category"
+                value={category}
+                onChange={e => updateParam('category', e.target.value)}
+                className="h-11 border border-ed-rule-strong bg-white px-3 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
+              >
+                <option value="all">All categories</option>
+                {data.categories.map(cat => (
+                  <option key={cat.slug} value={cat.slug}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                aria-label="Filter by status"
+                value={statusFilter}
+                onChange={e => updateParam('status', e.target.value)}
+                className="h-11 border border-ed-rule-strong bg-white px-3 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
+              >
+                <option value="all">All statuses</option>
+                <option value="critical">Critical only (5m)</option>
+                <option value="down">Down</option>
+                <option value="degraded">Degraded</option>
+                <option value="up">Operational</option>
+              </select>
+            </div>
+
+            {pagedMonitors.length === 0 ? (
+              <div className="border border-ed-rule bg-ed-paper-2 p-8 text-center font-sans-ed text-sm text-ed-ink-3">
+                No portals match your current filters.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {pagedMonitors.map(monitor => (
+                  <MonitorRow
+                    key={monitor.slug}
+                    monitor={monitor}
+                    granularity={granularity}
+                  />
+                ))}
+              </div>
+            )}
+
+            <Pagination
+              page={safePage}
+              totalPages={totalPages}
+              onPageChange={p => updateParam('page', String(p))}
+            />
+          </section>
+        </>
+      )}
+    </Container>
+  );
+};
+
+export default Home;

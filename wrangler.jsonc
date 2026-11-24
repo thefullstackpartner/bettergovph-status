@@ -1,0 +1,43 @@
+{
+  "name": "bettergovph-status",
+  "main": "functions/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  // Provision KV & Queues before deploying to staging/production.
+  // Missing bindings degrade gracefully in local dev (see functions/index.ts).
+  // "kv_namespaces": [
+  //   { "binding": "STATUS_KV", "id": "<filled-at-setup>" }
+  // ],
+  // "queues": {
+  //   "producers": [{ "binding": "CHECK_QUEUE", "queue": "bettergovph-status-checks" }],
+  //   "consumers": [{ "queue": "bettergovph-status-checks", "max_batch_size": 1, "max_retries": 1 }]
+  // },
+  "ratelimits": [
+    {
+      "name": "API_RATE_LIMITER",
+      "namespace_id": "2026112401",
+      "simple": { "limit": 120, "period": 60 }
+    }
+  ],
+  "vars": {
+    "USER_AGENT": "bettergovph-status/1.0 (+https://bettergovph-status.workers.dev/about)"
+  },
+  "env": {
+    "staging": {
+      "name": "bettergovph-status-staging",
+      "vars": {
+        "USER_AGENT": "bettergovph-status/1.0 (+https://bettergovph-status-staging.workers.dev/about)"
+      }
+    }
+  },
+  "observability": { "enabled": true }
+}

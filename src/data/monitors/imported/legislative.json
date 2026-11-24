@@ -1,0 +1,30 @@
+[
+  {
+    "slug": "house-of-representatives-19th-congress",
+    "name": "House Of Representatives (19th Congress)",
+    "agency": "House Of Representatives (19th Congress)",
+    "department": null,
+    "category": "legislative",
+    "type": "http",
+    "url": "https://www.congress.gov.ph/",
+    "tier": "standard",
+    "method": "GET",
+    "degradedMs": 3000,
+    "source": "bettergov-websites",
+    "enabled": true
+  },
+  {
+    "slug": "senate-of-the-philippines-19th-congress",
+    "name": "Senate Of The Philippines (19th Congress)",
+    "agency": "Senate Of The Philippines (19th Congress)",
+    "department": null,
+    "category": "legislative",
+    "type": "http",
+    "url": "https://www.senate.gov.ph/",
+    "tier": "standard",
+    "method": "GET",
+    "degradedMs": 3000,
+    "source": "bettergov-websites",
+    "enabled": true
+  }
+]

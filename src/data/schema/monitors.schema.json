@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["slug", "name", "agency", "category", "type", "url", "tier"],
+    "additionalProperties": false,
+    "properties": {
+      "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "name": { "type": "string", "minLength": 1 },
+      "agency": { "type": "string", "minLength": 1 },
+      "department": { "type": ["string", "null"] },
+      "category": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "type": { "enum": ["http"] },
+      "url": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https?://"
+      },
+      "tier": { "enum": ["critical", "standard"] },
+      "method": { "enum": ["GET", "HEAD"] },
+      "expectedStatus": {
+        "type": "array",
+        "items": { "type": "integer", "minimum": 100, "maximum": 599 }
+      },
+      "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 30000 },
+      "degradedMs": { "type": "integer", "minimum": 100, "maximum": 30000 },
+      "expectedKeyword": { "type": "string", "minLength": 1 },
+      "forbiddenKeywords": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "source": { "enum": ["curated", "bettergov-websites"] },
+      "enabled": { "type": "boolean" }
+    }
+  }
+}
