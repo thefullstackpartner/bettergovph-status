@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SearchIcon } from 'lucide-react';
+import { ChevronDownIcon, SearchIcon } from 'lucide-react';
 import {
   Button,
   Container,
@@ -40,8 +40,22 @@ const Home: FC = () => {
       if (category !== 'all' && m.category !== category) return false;
       if (statusFilter === 'critical' && m.tier !== 'critical') return false;
       if (
+        statusFilter === 'waf' &&
+        !(m.status === 'degraded' && m.lastError === 'waf_403')
+      ) {
+        return false;
+      }
+      if (
+        statusFilter === 'degraded' &&
+        !(m.status === 'degraded' && m.lastError !== 'waf_403')
+      ) {
+        return false;
+      }
+      if (
         statusFilter !== 'all' &&
         statusFilter !== 'critical' &&
+        statusFilter !== 'waf' &&
+        statusFilter !== 'degraded' &&
         m.status !== statusFilter
       ) {
         return false;
@@ -133,33 +147,89 @@ const Home: FC = () => {
                 />
               </div>
 
-              <select
-                aria-label="Filter by category"
-                value={category}
-                onChange={e => updateParam('category', e.target.value)}
-                className="h-11 border border-ed-rule-strong bg-white px-3 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
-              >
-                <option value="all">All categories</option>
-                {data.categories.map(cat => (
-                  <option key={cat.slug} value={cat.slug}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  aria-label="Filter by category"
+                  value={category}
+                  onChange={e => updateParam('category', e.target.value)}
+                  className="h-11 w-full appearance-none border border-ed-rule-strong bg-white pl-3 pr-9 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
+                >
+                  <option value="all">All categories</option>
+                  {data.categories.map(cat => (
+                    <option key={cat.slug} value={cat.slug}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon
+                  size={16}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ed-ink-3"
+                  aria-hidden="true"
+                />
+              </div>
 
-              <select
-                aria-label="Filter by status"
-                value={statusFilter}
-                onChange={e => updateParam('status', e.target.value)}
-                className="h-11 border border-ed-rule-strong bg-white px-3 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
-              >
-                <option value="all">All statuses</option>
-                <option value="critical">Critical only (5m)</option>
-                <option value="down">Down</option>
-                <option value="degraded">Degraded</option>
-                <option value="up">Operational</option>
-                <option value="unknown">Pending</option>
-              </select>
+              <div className="relative">
+                <select
+                  aria-label="Filter by status"
+                  value={statusFilter}
+                  onChange={e => updateParam('status', e.target.value)}
+                  className="h-11 w-full appearance-none border border-ed-rule-strong bg-white pl-3 pr-9 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="critical">Critical only (5m)</option>
+                  <option value="down">Down</option>
+                  <option value="degraded">Degraded</option>
+                  <option value="waf">Probe Blocked (WAF)</option>
+                  <option value="up">Operational</option>
+                  <option value="unknown">Pending</option>
+                </select>
+                <ChevronDownIcon
+                  size={16}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ed-ink-3"
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
+
+            <div
+              className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono-ed text-[11px] text-ed-ink-3"
+              aria-label="Uptime bar color legend"
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-3 w-2 rounded-[1px] bg-success-500"
+                  aria-hidden="true"
+                />
+                Operational
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-3 w-2 rounded-[1px] bg-warning-500"
+                  aria-hidden="true"
+                />
+                Degraded / &lt;50% down
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-3 w-2 rounded-[1px] bg-indigo-500"
+                  aria-hidden="true"
+                />
+                Probe Blocked (WAF)
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-3 w-2 rounded-[1px] bg-ed-red"
+                  aria-hidden="true"
+                />
+                Down (≥50%)
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-3 w-2 rounded-[1px] bg-ed-paper-3"
+                  aria-hidden="true"
+                />
+                No data
+              </span>
             </div>
 
             {pagedMonitors.length === 0 ? (

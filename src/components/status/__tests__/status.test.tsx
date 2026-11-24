@@ -36,6 +36,72 @@ describe('status UI components', () => {
     expect(onFilterStatus).toHaveBeenCalledWith('up');
   });
 
+  it('separates WAF-blocked portals from degraded in OverallBanner', () => {
+    const onFilterStatus = vi.fn();
+    const summaryWithWaf: SummaryResponse = {
+      ...baseSummary,
+      counts: {
+        ...baseSummary.counts,
+        degraded: 2,
+        down: 0,
+      },
+      monitors: [
+        {
+          slug: 'slow-site',
+          name: 'Slow Site',
+          agency: 'Agency A',
+          department: null,
+          category: 'executive',
+          url: 'https://slow.gov.ph',
+          tier: 'standard',
+          source: 'curated',
+          status: 'degraded',
+          lastCheckedAt: null,
+          lastHttpStatus: 200,
+          lastResponseMs: 4200,
+          lastError: null,
+          lastColo: 'SIN',
+          uptime24h: 100,
+          avgMs24h: 4200,
+          bars90d: [],
+          hourly24h: [],
+        },
+        {
+          slug: 'waf-site',
+          name: 'WAF Site',
+          agency: 'Agency B',
+          department: null,
+          category: 'executive',
+          url: 'https://waf.gov.ph',
+          tier: 'standard',
+          source: 'curated',
+          status: 'degraded',
+          lastCheckedAt: null,
+          lastHttpStatus: 403,
+          lastResponseMs: 120,
+          lastError: 'waf_403',
+          lastColo: 'SIN',
+          uptime24h: 100,
+          avgMs24h: 120,
+          bars90d: [],
+          hourly24h: [],
+        },
+      ],
+    };
+
+    render(
+      <OverallBanner
+        summary={summaryWithWaf}
+        activeStatus="all"
+        onFilterStatus={onFilterStatus}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: '1 degraded' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '1 probe blocked' }));
+    expect(onFilterStatus).toHaveBeenCalledWith('waf');
+  });
+
   it('renders accessible daily UptimeBars with aria-labels', () => {
     render(
       <UptimeBars
@@ -99,6 +165,7 @@ describe('status UI components', () => {
     );
     const wafLabel = screen.getByText('Probe Blocked (WAF)');
     expect(wafLabel).toBeInTheDocument();
+    expect(wafLabel.parentElement?.className).toContain('bg-indigo-50');
     expect(wafLabel.parentElement?.getAttribute('title')).toContain(
       'accessible in your browser'
     );
@@ -108,5 +175,29 @@ describe('status UI components', () => {
 
     rerender(<StatusPill status="degraded" />);
     expect(screen.getByText('Degraded')).toBeInTheDocument();
+  });
+
+  it('renders indigo UptimeBars slot for WAF-blocked checks', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    render(
+      <UptimeBars
+        granularity="daily"
+        days={3}
+        bars={[
+          {
+            day: today,
+            total: 4,
+            up: 0,
+            degraded: 0,
+            waf: 4,
+            down: 0,
+            avgMs: 95,
+          },
+        ]}
+      />
+    );
+    const items = screen.getAllByRole('listitem');
+    expect(items[2].className).toContain('bg-indigo-500');
+    expect(items[2].getAttribute('aria-label')).toContain('probe blocked');
   });
 });

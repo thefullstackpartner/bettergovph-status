@@ -27,6 +27,7 @@ export interface SummaryDbPayload {
       total: number;
       up: number;
       degraded: number;
+      waf?: number;
       down: number;
       avgMs: number;
     }>;
@@ -38,6 +39,7 @@ export interface SummaryDbPayload {
       total: number;
       up: number;
       degraded: number;
+      waf?: number;
       down: number;
       avgMs: number;
     }>;

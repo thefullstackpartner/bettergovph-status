@@ -82,6 +82,71 @@ const AboutPage: FC = () => {
       </section>
 
       <section>
+        <SectionHeader label="Uptime Bar Color Legend" />
+        <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
+          <p>
+            Each vertical bar represents one hour (24h view) or one day
+            (45d/90d view) in Asia/Manila time, colored by the checks recorded
+            during that window:
+          </p>
+          <ul className="space-y-2">
+            <li className="flex items-start gap-2.5">
+              <span
+                className="mt-1 h-4 w-2.5 shrink-0 rounded-[1px] bg-success-500"
+                aria-hidden="true"
+              />
+              <span>
+                <strong>Green (Operational):</strong> Majority of checks were
+                operational with zero down checks.
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span
+                className="mt-1 h-4 w-2.5 shrink-0 rounded-[1px] bg-warning-500"
+                aria-hidden="true"
+              />
+              <span>
+                <strong>Orange (Degraded / Partial Outage):</strong> Fewer than
+                50% of checks were down, or slow/degraded responses outnumbered
+                operational checks.
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span
+                className="mt-1 h-4 w-2.5 shrink-0 rounded-[1px] bg-indigo-500"
+                aria-hidden="true"
+              />
+              <span>
+                <strong>Indigo (Probe Blocked — WAF):</strong> Zero down checks,
+                and the majority of checks were blocked by a firewall (HTTP{' '}
+                <code>403</code>).
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span
+                className="mt-1 h-4 w-2.5 shrink-0 rounded-[1px] bg-ed-red"
+                aria-hidden="true"
+              />
+              <span>
+                <strong>Red (Down):</strong> 50% or more of checks in that
+                window failed or displayed a maintenance notice.
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span
+                className="mt-1 h-4 w-2.5 shrink-0 rounded-[1px] bg-ed-paper-3"
+                aria-hidden="true"
+              />
+              <span>
+                <strong>Gray (No data):</strong> No checks were recorded during
+                that window.
+              </span>
+            </li>
+          </ul>
+        </Card>
+      </section>
+
+      <section>
         <SectionHeader label="Probe Behavior, Allowlisting &amp; Agency Opt-Out" />
         <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <p>

@@ -78,6 +78,28 @@ const Footer: FC = () => {
             )}
           </div>
         </div>
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-ed-rule pt-6 font-mono-ed text-[11px] text-ed-ink-3">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <img
+              src="/logos/horizontal-primary.webp"
+              alt="BetterGov.ph"
+              width={176}
+              height={44}
+              loading="lazy"
+              className="h-8 w-auto object-contain"
+            />
+            <span>Community-built · Open source</span>
+            <span>Not an official government website</span>
+          </div>
+          <a
+            href="https://www.gov.ph/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-ed-navy underline underline-offset-2 hover:text-ed-navy-ink"
+          >
+            Official government portal ↗
+          </a>
+        </div>
       </Container>
     </footer>
   );

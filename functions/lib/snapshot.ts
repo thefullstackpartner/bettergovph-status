@@ -2,8 +2,6 @@ import type { Env } from '../types';
 import { categories, enabledMonitors } from './monitors';
 import { fetchSummaryFromDb } from './supabase';
 
-export const SUMMARY_KV_KEY = 'status:summary';
-
 export interface SummarySnapshot {
   generatedAt: string;
   counts: {
@@ -37,6 +35,7 @@ export interface SummarySnapshot {
       total: number;
       up: number;
       degraded: number;
+      waf?: number;
       down: number;
       avgMs: number;
     }>;
@@ -45,6 +44,7 @@ export interface SummarySnapshot {
       total: number;
       up: number;
       degraded: number;
+      waf?: number;
       down: number;
       avgMs: number;
     }>;
@@ -121,25 +121,6 @@ export async function buildSummarySnapshot(env: Env): Promise<SummarySnapshot> {
   };
 }
 
-export async function refreshSummarySnapshot(
-  env: Env
-): Promise<SummarySnapshot> {
-  const snapshot = await buildSummarySnapshot(env);
-  if (env.STATUS_KV) {
-    await env.STATUS_KV.put(SUMMARY_KV_KEY, JSON.stringify(snapshot), {
-      expirationTtl: 600,
-    });
-  }
-  return snapshot;
-}
-
 export async function getSummarySnapshot(env: Env): Promise<SummarySnapshot> {
-  if (env.STATUS_KV) {
-    const cached = await env.STATUS_KV.get<SummarySnapshot>(
-      SUMMARY_KV_KEY,
-      'json'
-    );
-    if (cached) return cached;
-  }
-  return refreshSummarySnapshot(env);
+  return buildSummarySnapshot(env);
 }

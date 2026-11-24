@@ -51,7 +51,6 @@ export interface Env {
   USER_AGENT?: string;
   ALLOW_MANUAL_TRIGGER?: string;
   TRIGGER_SECRET?: string;
-  STATUS_KV?: KVNamespace;
   CHECK_QUEUE?: Queue<BatchMessage>;
   API_RATE_LIMITER?: RateLimit;
 }

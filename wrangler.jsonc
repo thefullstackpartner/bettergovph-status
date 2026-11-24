@@ -11,11 +11,8 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
-  // Provision KV & Queues before deploying to staging/production.
-  // Missing bindings degrade gracefully in local dev (see functions/index.ts).
-  // "kv_namespaces": [
-  //   { "binding": "STATUS_KV", "id": "<filled-at-setup>" }
-  // ],
+  // Provision Queue before deploying to staging/production.
+  // Missing binding degrades gracefully in local dev (see functions/lib/scheduler.ts).
   // "queues": {
   //   "producers": [{ "binding": "CHECK_QUEUE", "queue": "bettergovph-status-checks" }],
   //   "consumers": [{ "queue": "bettergovph-status-checks", "max_batch_size": 1, "max_retries": 1 }]

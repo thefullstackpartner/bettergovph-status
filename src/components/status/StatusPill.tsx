@@ -34,15 +34,17 @@ const STYLES: Record<
   },
 };
 
+const WAF_STYLE = {
+  label: 'Probe Blocked (WAF)',
+  dot: 'bg-indigo-500',
+  pill: 'border-indigo-300 bg-indigo-50 text-indigo-800',
+};
+
 const StatusPill: FC<Props> = ({ status, error, className }) => {
-  const cfg = STYLES[status];
   const isWaf = status === 'degraded' && error === 'waf_403';
   const isMaintenance = status === 'down' && error === 'maintenance';
-  const label = isWaf
-    ? 'Probe Blocked (WAF)'
-    : isMaintenance
-      ? 'Under Maintenance'
-      : cfg.label;
+  const cfg = isWaf ? WAF_STYLE : STYLES[status];
+  const label = isMaintenance ? 'Under Maintenance' : cfg.label;
   const title = isWaf
     ? 'This portal’s firewall blocked automated monitoring; it may still be accessible in your browser.'
     : isMaintenance

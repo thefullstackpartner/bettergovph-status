@@ -17,10 +17,11 @@ Goals:
 ## Features
 
 - Tiered check intervals: **5 minutes** for critical citizen portals, **15 minutes** for standard agency websites
-- Uptime Kuma-style 45-day / 90-day uptime bars and response-time charts (`24h`, `7d`, `30d`, `90d`)
+- Uptime Kuma-style 24-hour / 45-day / 90-day uptime bars with color-coded status legend (Operational, Degraded / partial outage, Probe Blocked (WAF), Down / Under Maintenance, No data) and response-time charts (`24h`, `7d`, `30d`, `90d`)
+- Clickable overall status filters on the homepage and dedicated `/about` methodology & agency allowlisting documentation
 - 2-strike incident detection (opens on 2 consecutive `down` checks, resolves on 2 consecutive non-down checks)
 - Data-as-code monitor definitions validated by JSON Schema
-- Cached KV snapshots so public traffic never hits the database directly
+- Hono-powered Cloudflare Worker API with edge-cached responses (`Cache-Control: s-maxage=60`) to absorb public traffic
 
 ## How to Run
 
@@ -49,11 +50,10 @@ npm run dev
 
 ### Triggering checks locally
 
-Local development does not run the 5-minute cron automatically. You can trigger a check cycle manually in any of three ways:
+Local development does not run the 5-minute cron automatically. You can trigger a check cycle manually in either of two ways:
 
-1. Click **Run Critical Checks** in the local dev banner on the homepage.
-2. Run `npm run check:trigger` for a one-off run, or `npm run check:watch` to run checks automatically every 5 minutes (`npm run check:watch -- --all` also cycles through standard monitors every 15 minutes).
-3. Call Wrangler's scheduled endpoint: `curl "http://127.0.0.1:5525/__scheduled?cron=*/5+*+*+*+*"`
+1. Run `npm run check:trigger` for a one-off critical-tier run, `npm run check:watch` to run critical checks every 5 minutes, or `npm run check:watch:all` to also cycle through all standard-tier monitors every 15 minutes.
+2. Call Wrangler's scheduled endpoint: `curl "http://127.0.0.1:5525/__scheduled?cron=*/5+*+*+*+*"`
 
 ## Monitor data
 
@@ -94,8 +94,8 @@ See [the Supabase notes](supabase/README.md) for local reset (`npm run db:down:l
 ## Deploying
 
 1. Create dedicated Supabase projects for staging and production (Singapore region recommended).
-2. Apply `supabase/migrations/20261124000000_bgovph_init.sql` to each project.
-3. Provision a Cloudflare KV namespace (`STATUS_KV`) and Queue (`CHECK_QUEUE`), and add their IDs to `wrangler.jsonc`.
+2. Apply all migrations in `supabase/migrations/` (`20261124000000_bgovph_init.sql`, `20261124000001_bgovph_waf_bars.sql`) to each project.
+3. Provision a Cloudflare Queue (`CHECK_QUEUE`) and add its ID to `wrangler.jsonc`.
 4. Set secrets with `wrangler secret put SUPABASE_URL` and `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`.
 5. Deploy:
 

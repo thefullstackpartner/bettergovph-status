@@ -11,7 +11,6 @@ import {
   requireSupabaseEnv,
 } from './lib/request-security';
 import { processBatch, runCycle } from './lib/scheduler';
-import { refreshSummarySnapshot } from './lib/snapshot';
 import { pruneOldChecks } from './lib/supabase';
 import type { BatchMessage, Env } from './types';
 
@@ -70,7 +69,6 @@ export default {
       await processBatch(msg.body.slugs, env);
       msg.ack();
     }
-    await refreshSummarySnapshot(env);
   },
 
   fetch: app.fetch,

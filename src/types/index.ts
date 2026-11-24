@@ -13,6 +13,7 @@ export interface DailyBar {
   total: number;
   up: number;
   degraded: number;
+  waf?: number;
   down: number;
   avgMs: number;
 }
@@ -22,6 +23,7 @@ export interface HourlyBar {
   total: number;
   up: number;
   degraded: number;
+  waf?: number;
   down: number;
   avgMs: number;
 }

@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils';
 import type { CheckStatus, SummaryResponse } from '../../types';
 import { Eyebrow } from '../ui';
 
-export type BannerStatusFilter = 'all' | CheckStatus | 'unknown';
+export type BannerStatusFilter = 'all' | CheckStatus | 'unknown' | 'waf';
 
 type Props = {
   summary: SummaryResponse;
@@ -17,19 +17,26 @@ const OverallBanner: FC<Props> = ({
   activeStatus = 'all',
   onFilterStatus,
 }) => {
-  const { counts, generatedAt } = summary;
+  const { counts, generatedAt, monitors } = summary;
+  const wafCount = monitors.filter(
+    m => m.status === 'degraded' && m.lastError === 'waf_403'
+  ).length;
+  const degradedCount = Math.max(0, counts.degraded - wafCount);
   const hasDown = counts.down > 0;
-  const hasDegraded = counts.degraded > 0;
+  const hasDegraded = degradedCount > 0;
   const allUnknown = counts.unknown === counts.total;
 
-  let title = 'All monitored portals operational';
+  let title =
+    wafCount > 0
+      ? 'All reachable portals operational'
+      : 'All monitored portals operational';
 
   if (allUnknown) {
     title = 'Awaiting initial status checks';
   } else if (hasDown) {
     title = `${counts.down} ${counts.down === 1 ? 'service' : 'services'} currently down`;
   } else if (hasDegraded) {
-    title = `${counts.degraded} ${counts.degraded === 1 ? 'service' : 'services'} experiencing degraded responses`;
+    title = `${degradedCount} ${degradedCount === 1 ? 'service' : 'services'} experiencing degraded responses`;
   }
 
   const handleSelect = (status: BannerStatusFilter) => {
@@ -77,7 +84,7 @@ const OverallBanner: FC<Props> = ({
             />
             <span>{counts.up} up</span>
           </button>
-          {counts.degraded > 0 && (
+          {degradedCount > 0 && (
             <button
               type="button"
               onClick={() => handleSelect('degraded')}
@@ -88,7 +95,21 @@ const OverallBanner: FC<Props> = ({
                 className="h-2 w-2 rounded-full bg-warning-500"
                 aria-hidden="true"
               />
-              <span>{counts.degraded} degraded</span>
+              <span>{degradedCount} degraded</span>
+            </button>
+          )}
+          {wafCount > 0 && (
+            <button
+              type="button"
+              onClick={() => handleSelect('waf')}
+              aria-pressed={activeStatus === 'waf'}
+              className={chipClass('waf')}
+            >
+              <span
+                className="h-2 w-2 rounded-full bg-indigo-400"
+                aria-hidden="true"
+              />
+              <span>{wafCount} probe blocked</span>
             </button>
           )}
           {counts.down > 0 && (

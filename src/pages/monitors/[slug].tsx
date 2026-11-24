@@ -94,18 +94,18 @@ const MonitorDetailPage: FC = () => {
 
       {m && (
         <>
-          <div className="border border-ed-rule bg-white p-6">
+          <div className="border border-neutral-900 bg-neutral-950 p-6 text-white">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <Eyebrow tone="navy">{m.agency}</Eyebrow>
-                <h1 className="mt-1 font-serif-ed text-3xl font-bold text-ed-ink max-md:text-2xl">
+                <Eyebrow tone="onDark">{m.agency}</Eyebrow>
+                <h1 className="mt-1 font-serif-ed text-3xl font-bold text-white max-md:text-2xl">
                   {m.name}
                 </h1>
                 <a
                   href={m.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 inline-flex items-center gap-1.5 font-mono-ed text-xs text-ed-navy hover:underline"
+                  className="mt-1 inline-flex items-center gap-1.5 font-mono-ed text-xs text-white/80 hover:text-white hover:underline"
                 >
                   <span>{m.url}</span>
                   <ExternalLinkIcon size={12} />
@@ -114,50 +114,49 @@ const MonitorDetailPage: FC = () => {
               <StatusPill status={m.status} error={m.lastError} />
             </div>
 
-            {m.lastError === 'waf_403' && (
-              <Notice tone="info" className="mt-4">
-                This portal’s firewall (WAF) blocked automated monitoring
-                probes (`403`). It may still be accessible normally in your
-                browser.
-              </Notice>
-            )}
-
-            <div className="mt-6 grid grid-cols-2 gap-4 border-t border-ed-rule pt-5 md:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 md:grid-cols-4">
               <div>
-                <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                <div className="font-mono-ed text-[11px] uppercase text-white/60">
                   Last Response
                 </div>
-                <div className="mt-1 font-serif-ed text-xl font-bold text-ed-ink">
+                <div className="mt-1 font-serif-ed text-xl font-bold text-white">
                   {formatMs(m.lastResponseMs)}
                 </div>
               </div>
               <div>
-                <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                <div className="font-mono-ed text-[11px] uppercase text-white/60">
                   24h Uptime
                 </div>
-                <div className="mt-1 font-serif-ed text-xl font-bold text-ed-ink">
+                <div className="mt-1 font-serif-ed text-xl font-bold text-white">
                   {formatUptime(m.uptime24h)}
                 </div>
               </div>
               <div>
-                <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                <div className="font-mono-ed text-[11px] uppercase text-white/60">
                   24h Avg Latency
                 </div>
-                <div className="mt-1 font-serif-ed text-xl font-bold text-ed-ink">
+                <div className="mt-1 font-serif-ed text-xl font-bold text-white">
                   {formatMs(m.avgMs24h)}
                 </div>
               </div>
               <div>
-                <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                <div className="font-mono-ed text-[11px] uppercase text-white/60">
                   Last Check (Colo)
                 </div>
-                <div className="mt-1 font-mono-ed text-xs text-ed-ink-2">
+                <div className="mt-1 font-mono-ed text-xs text-white/85">
                   {formatManilaTimestamp(m.lastCheckedAt)}
                   {m.lastColo ? ` (${m.lastColo})` : ''}
                 </div>
               </div>
             </div>
           </div>
+
+          {m.lastError === 'waf_403' && (
+            <Notice tone="info" className="mt-4">
+              This portal’s firewall (WAF) blocked automated monitoring probes
+              (`403`). It may still be accessible normally in your browser.
+            </Notice>
+          )}
 
           <section className="mt-8">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

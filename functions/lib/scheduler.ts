@@ -1,7 +1,6 @@
 import { runners } from '../checks';
 import type { CheckResult, Env, MonitorDefinition } from '../types';
 import { enabledMonitors, getMonitorBySlug } from './monitors';
-import { refreshSummarySnapshot } from './snapshot';
 import { recordChecks } from './supabase';
 
 export const BATCH_SIZE = 40;
@@ -104,7 +103,6 @@ export async function runCycle(
   const firstBatch = batches[0] ?? [];
   if (firstBatch.length > 0) {
     await processBatch(firstBatch, env);
-    await refreshSummarySnapshot(env);
   }
   return {
     mode: 'inline',

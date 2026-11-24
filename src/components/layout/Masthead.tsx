@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ActivityIcon, MenuIcon, XIcon } from 'lucide-react';
+import { MenuIcon, XIcon } from 'lucide-react';
 import { Button, Container } from '../ui';
 import PhaseBanner from './PhaseBanner';
 import PrimaryNav from './PrimaryNav';
@@ -18,9 +18,13 @@ const Masthead: FC = () => {
             to="/"
             className="inline-flex items-center gap-3 text-ed-ink no-underline"
           >
-            <span className="flex h-10 w-10 items-center justify-center bg-ed-navy text-white">
-              <ActivityIcon size={20} />
-            </span>
+            <img
+              src="/logos/emblem-primary.webp"
+              alt="BetterGov.ph emblem"
+              width={40}
+              height={40}
+              className="h-10 w-10 shrink-0 object-contain"
+            />
             <span className="flex flex-col">
               <span className="font-serif-ed text-xl font-bold tracking-tight text-ed-ink max-md:text-lg">
                 BetterGovPH <span className="text-ed-navy">Status</span>

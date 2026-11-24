@@ -8,7 +8,6 @@ This folder contains the single Cloudflare Worker serving both the `/api/*` endp
 | --- | --- | --- | --- |
 | `SUPABASE_URL` | Secret | Yes | Supabase project REST endpoint |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Yes | Service role key for `bgovph_*` RPCs and queries |
-| `STATUS_KV` | KV Namespace | Optional | Caches `status:summary` snapshot (falls back to live DB query if missing) |
 | `CHECK_QUEUE` | Queue | Optional | Fans out batches of <=40 checks (falls back to inline single-batch check if missing) |
 | `API_RATE_LIMITER` | Rate Limit | Optional | Limits dynamic `/api/*` requests to 120 req / 60s per IP |
 | `ALLOW_MANUAL_TRIGGER` | Var | Local only | Set `"true"` in `.dev.vars` to enable `POST /api/trigger` |

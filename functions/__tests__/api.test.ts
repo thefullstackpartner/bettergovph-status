@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { app } from '../index';
+import * as supabase from '../lib/supabase';
 import type { Env } from '../types';
 
 const baseEnv: Env = {
@@ -8,6 +9,9 @@ const baseEnv: Env = {
 };
 
 describe('Worker Hono API', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
   it('returns 503 when Supabase bindings are missing', async () => {
     const res = await app.request('/api/summary', {}, {} as Env);
     expect(res.status).toBe(503);
@@ -69,31 +73,19 @@ describe('Worker Hono API', () => {
     expect(await res.json()).toEqual({ error: 'Manual trigger is disabled' });
   });
 
-  it('returns cached summary snapshot from STATUS_KV', async () => {
-    const mockSnapshot = {
-      generatedAt: '2026-11-24T00:00:00.000Z',
-      counts: {
-        total: 0,
-        up: 0,
-        degraded: 0,
-        down: 0,
-        unknown: 0,
-        openIncidents: 0,
-      },
-      categories: [],
-      monitors: [],
-    };
-    const envWithKv: Env = {
-      ...baseEnv,
-      STATUS_KV: {
-        get: async () => mockSnapshot,
-      } as unknown as KVNamespace,
-    };
+  it('returns summary snapshot with Cloudflare cache headers', async () => {
+    vi.spyOn(supabase, 'fetchSummaryFromDb').mockResolvedValue({
+      states: [],
+      u24: [],
+      bars: [],
+      hourly: [],
+      openIncidents: 0,
+    });
 
     const res = await app.request(
       '/api/summary',
       { headers: { Origin: 'http://localhost:5125' } },
-      envWithKv
+      baseEnv
     );
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe(
@@ -102,6 +94,10 @@ describe('Worker Hono API', () => {
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe(
       'http://localhost:5125'
     );
-    expect(await res.json()).toEqual(mockSnapshot);
+    const body = (await res.json()) as {
+      counts: { total: number; openIncidents: number };
+    };
+    expect(body.counts.total).toBeGreaterThan(0);
+    expect(body.counts.openIncidents).toBe(0);
   });
 });

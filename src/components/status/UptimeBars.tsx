@@ -15,6 +15,7 @@ type SlotStats = {
   total: number;
   up: number;
   degraded: number;
+  waf?: number;
   down: number;
   avgMs: number;
 };
@@ -107,16 +108,25 @@ const UptimeBars: FC<Props> = ({
         let label = `${displayLabel}: No data`;
 
         if (data && data.total > 0) {
-          const okCount = data.up + data.degraded;
+          const wafCount = data.waf ?? 0;
+          const okCount = data.up + data.degraded + wafCount;
           const uptimePct = Math.round((okCount / data.total) * 1000) / 10;
           if (data.down > 0 && data.down / data.total >= 0.5) {
             colorClass = 'bg-ed-red';
-          } else if (data.down > 0 || data.degraded > data.up) {
+          } else if (data.down > 0) {
+            colorClass = 'bg-warning-500';
+          } else if (wafCount > data.up && wafCount >= data.degraded) {
+            colorClass = 'bg-indigo-500';
+          } else if (data.degraded > data.up) {
             colorClass = 'bg-warning-500';
           } else {
             colorClass = 'bg-success-500';
           }
-          label = `${displayLabel}: ${uptimePct}% up (${data.total} checks, avg ${data.avgMs} ms)`;
+          const suffix =
+            wafCount > data.up && wafCount >= data.degraded && data.down === 0
+              ? ', probe blocked'
+              : '';
+          label = `${displayLabel}: ${uptimePct}% up (${data.total} checks, avg ${data.avgMs} ms${suffix})`;
         }
 
         return (
