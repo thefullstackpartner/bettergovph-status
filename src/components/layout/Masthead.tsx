@@ -2,7 +2,6 @@ import { FC, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MenuIcon, XIcon } from 'lucide-react';
 import { Button, Container } from '../ui';
-import PhaseBanner from './PhaseBanner';
 import PrimaryNav from './PrimaryNav';
 import MobileMenu from './MobileMenu';
 
@@ -11,7 +10,6 @@ const Masthead: FC = () => {
 
   return (
     <header className="border-b-2 border-b-blue-950 bg-white font-sans-ed text-ed-ink antialiased shadow-sm">
-      <PhaseBanner />
       <Container>
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-8 py-5 max-md:grid-cols-[auto_auto] max-md:justify-between max-md:gap-3 max-md:py-3">
           <Link
@@ -41,16 +39,6 @@ const Masthead: FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button
-              as={Link}
-              to="/incidents"
-              variant="ghost"
-              size="sm"
-              className="max-lg:hidden"
-            >
-              View Incidents
-            </Button>
-
             <Button
               variant="ghost"
               size="sm"

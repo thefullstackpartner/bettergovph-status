@@ -20,7 +20,7 @@ export default defineConfig({
       ],
     },
     proxy: {
-      '^/api/(summary|monitors(?:/.*)?|incidents|trigger)(?:\\?|$)': {
+      '^/api/(summary|monitors(?:/.*)?|incidents)(?:\\?|$)': {
         target: 'http://127.0.0.1:5525',
         changeOrigin: true,
         configure(proxy) {

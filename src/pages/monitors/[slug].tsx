@@ -94,7 +94,7 @@ const MonitorDetailPage: FC = () => {
 
       {m && (
         <>
-          <div className="border border-neutral-900 bg-neutral-950 p-6 text-white">
+          <div className="border border-[#002b82] bg-[#0038a8] p-6 text-white">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <Eyebrow tone="onDark">{m.agency}</Eyebrow>

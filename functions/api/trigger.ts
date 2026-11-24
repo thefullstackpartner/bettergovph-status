@@ -3,17 +3,16 @@ import type { Env } from '../types';
 import { runCycle } from '../lib/scheduler';
 
 /**
- * Manual status check trigger for local development (or authorized automation).
- * Disabled unless ALLOW_MANUAL_TRIGGER === 'true' or Bearer TRIGGER_SECRET matches.
+ * Manual status check trigger for authorized automation.
+ * Disabled unless Authorization: Bearer <TRIGGER_SECRET> matches.
  */
 export async function onTriggerRequest(c: Context<{ Bindings: Env }>) {
-  const allowLocal = c.env.ALLOW_MANUAL_TRIGGER === 'true';
   const authHeader = c.req.header('Authorization');
   const validSecret =
     Boolean(c.env.TRIGGER_SECRET) &&
     authHeader === `Bearer ${c.env.TRIGGER_SECRET}`;
 
-  if (!allowLocal && !validSecret) {
+  if (!validSecret) {
     return c.json({ error: 'Manual trigger is disabled' }, 403);
   }
 

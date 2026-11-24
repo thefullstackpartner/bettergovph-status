@@ -16,9 +16,13 @@ function parseArgs(argv: string[]) {
 }
 
 async function triggerBatch(tier: 'critical' | 'standard', offset = 0) {
+  const headers: Record<string, string> = {};
+  if (process.env.TRIGGER_SECRET) {
+    headers.Authorization = `Bearer ${process.env.TRIGGER_SECRET}`;
+  }
   const res = await fetch(
     `${WORKER_URL}/api/trigger?tier=${tier}&offset=${offset}`,
-    { method: 'POST' }
+    { method: 'POST', headers }
   );
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}: ${await res.text()}`);

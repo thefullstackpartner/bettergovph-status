@@ -49,7 +49,6 @@ export interface Env {
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   USER_AGENT?: string;
-  ALLOW_MANUAL_TRIGGER?: string;
   TRIGGER_SECRET?: string;
   CHECK_QUEUE?: Queue<BatchMessage>;
   API_RATE_LIMITER?: RateLimit;

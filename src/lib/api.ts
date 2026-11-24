@@ -47,14 +47,3 @@ export function getIncidents(status: 'open' | 'all', page = 1) {
     pageSize: number;
   }>(`/api/incidents?status=${status}&page=${page}`);
 }
-
-export function triggerManualCheck(
-  tier: 'critical' | 'standard' | 'all' = 'critical'
-) {
-  return fetchJson<{
-    ok: boolean;
-    mode: string;
-    scheduledCount: number;
-    batches: number;
-  }>(`/api/trigger?tier=${tier}`, { method: 'POST' });
-}

@@ -10,8 +10,7 @@ This folder contains the single Cloudflare Worker serving both the `/api/*` endp
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Yes | Service role key for `bgovph_*` RPCs and queries |
 | `CHECK_QUEUE` | Queue | Optional | Fans out batches of <=40 checks (falls back to inline single-batch check if missing) |
 | `API_RATE_LIMITER` | Rate Limit | Optional | Limits dynamic `/api/*` requests to 120 req / 60s per IP |
-| `ALLOW_MANUAL_TRIGGER` | Var | Local only | Set `"true"` in `.dev.vars` to enable `POST /api/trigger` |
-| `TRIGGER_SECRET` | Secret | Optional | Bearer token for `POST /api/trigger` in deployed environments |
+| `TRIGGER_SECRET` | Secret | Optional | Bearer token for `POST /api/trigger` |
 
 ## HTTP Security
 

@@ -48,15 +48,15 @@ const OverallBanner: FC<Props> = ({
     cn(
       'inline-flex items-center gap-2 border px-2.5 py-1 font-mono-ed text-xs transition-colors',
       activeStatus === status
-        ? 'border-white bg-white font-semibold text-neutral-950'
-        : 'border-white/20 bg-white/5 text-white/85 hover:border-white/50 hover:bg-white/10',
+        ? 'border-white bg-white font-semibold text-[#0038a8]'
+        : 'border-white/25 bg-white/10 text-white/90 hover:border-white/60 hover:bg-white/15',
       onFilterStatus ? 'cursor-pointer' : 'cursor-default'
     );
 
   return (
     <section
       aria-label="Overall system status"
-      className="border border-neutral-900 bg-neutral-950 p-6 text-white md:flex md:items-center md:justify-between md:gap-6"
+      className="border border-[#002b82] bg-[#0038a8] p-6 text-white md:flex md:items-center md:justify-between md:gap-6"
     >
       <div>
         <Eyebrow tone="onDark">Overall Status</Eyebrow>
