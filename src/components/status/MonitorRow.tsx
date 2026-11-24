@@ -22,6 +22,14 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
           >
             {monitor.name}
           </Link>
+          {monitor.tier === 'critical' && (
+            <span
+              title="Curated critical citizen portal — checked every 5 minutes"
+              className="border border-ed-navy/25 bg-ed-navy/5 px-1.5 py-0.5 font-mono-ed text-[10px] font-semibold uppercase tracking-[0.06em] text-ed-navy"
+            >
+              Critical
+            </span>
+          )}
         </div>
         <p className="mt-0.5 font-sans-ed text-xs text-ed-ink-3">
           {monitor.agency}

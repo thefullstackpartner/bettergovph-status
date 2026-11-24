@@ -45,13 +45,16 @@ const AboutPage: FC = () => {
         <Card className="space-y-4 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <ul className="list-disc space-y-2 pl-5">
             <li>
-              <strong>Critical portals (5-minute interval):</strong> High-traffic
-              citizen services such as BIR, SSS, PhilHealth, Pag-IBIG, PSA, DFA,
-              LTO, and eGovPH.
+              <strong>Critical portals (5-minute interval):</strong> The 31
+              curated, high-traffic citizen services (such as BIR, SSS,
+              PhilHealth, Pag-IBIG, PSA, DFA, LTO, and eGovPH), badged{' '}
+              <strong>Critical</strong> across the dashboard.
             </li>
             <li>
               <strong>Standard portals (15-minute interval):</strong> Agency
-              and LGU/SUC websites imported from the BetterGov.ph directory.
+              and LGU/SUC websites imported from the BetterGov.ph directory,
+              checked at every 15-minute mark (<code>:00</code>,{' '}
+              <code>:15</code>, <code>:30</code>, <code>:45</code>).
             </li>
             <li>
               <strong>Operational:</strong> HTTP 2xx or 3xx response within

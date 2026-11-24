@@ -97,7 +97,17 @@ const MonitorDetailPage: FC = () => {
           <div className="border border-[#002b82] bg-[#0038a8] p-6 text-white">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <Eyebrow tone="onDark">{m.agency}</Eyebrow>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Eyebrow tone="onDark">{m.agency}</Eyebrow>
+                  {m.tier === 'critical' && (
+                    <span
+                      title="Curated critical citizen portal — checked every 5 minutes"
+                      className="border border-white/30 bg-white/10 px-1.5 py-0.5 font-mono-ed text-[10px] font-semibold uppercase tracking-[0.06em] text-white"
+                    >
+                      Critical
+                    </span>
+                  )}
+                </div>
                 <h1 className="mt-1 font-serif-ed text-3xl font-bold text-white max-md:text-2xl">
                   {m.name}
                 </h1>
@@ -146,6 +156,11 @@ const MonitorDetailPage: FC = () => {
                 <div className="mt-1 font-mono-ed text-xs text-white/85">
                   {formatManilaTimestamp(m.lastCheckedAt)}
                   {m.lastColo ? ` (${m.lastColo})` : ''}
+                </div>
+                <div className="mt-1 font-mono-ed text-[11px] text-white/65">
+                  {m.tier === 'critical'
+                    ? 'Critical · 5-min checks'
+                    : 'Standard · 15-min checks'}
                 </div>
               </div>
             </div>

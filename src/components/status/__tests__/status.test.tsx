@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { IncidentCard, OverallBanner, StatusPill, UptimeBars } from '../index';
+import { IncidentCard, MonitorRow, OverallBanner, StatusPill, UptimeBars } from '../index';
 import type { SummaryResponse } from '../../../types';
 
 const baseSummary: SummaryResponse = {
@@ -230,5 +230,42 @@ describe('status UI components', () => {
     expect(
       screen.getByText(/monitored page may have moved or been removed/i)
     ).toBeInTheDocument();
+  });
+
+  it('renders Critical badge on MonitorRow only for critical tier', () => {
+    const baseMonitor = {
+      slug: 'bir-portal',
+      name: 'BIR Portal',
+      agency: 'Bureau of Internal Revenue',
+      department: null,
+      category: 'tax-revenue',
+      url: 'https://www.bir.gov.ph',
+      tier: 'critical' as const,
+      source: 'curated' as const,
+      status: 'up' as const,
+      lastCheckedAt: null,
+      lastHttpStatus: 200,
+      lastResponseMs: 180,
+      lastError: null,
+      lastColo: 'SIN',
+      uptime24h: 100,
+      avgMs24h: 180,
+      bars90d: [],
+      hourly24h: [],
+    };
+
+    const { rerender } = render(
+      <MemoryRouter>
+        <MonitorRow monitor={baseMonitor} />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('Critical')).toBeInTheDocument();
+
+    rerender(
+      <MemoryRouter>
+        <MonitorRow monitor={{ ...baseMonitor, tier: 'standard' }} />
+      </MemoryRouter>
+    );
+    expect(screen.queryByText('Critical')).not.toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import { FC, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronDownIcon, SearchIcon } from 'lucide-react';
 import {
   Button,
@@ -23,6 +23,7 @@ const Home: FC = () => {
   const query = searchParams.get('q') ?? '';
   const category = searchParams.get('category') ?? 'all';
   const statusFilter = searchParams.get('status') ?? 'all';
+  const tierFilter = searchParams.get('tier') ?? 'all';
   const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
 
   const updateParam = (key: string, value: string) => {
@@ -33,11 +34,17 @@ const Home: FC = () => {
     setSearchParams(next);
   };
 
+  const criticalCount = useMemo(
+    () => (data ? data.monitors.filter(m => m.tier === 'critical').length : 0),
+    [data]
+  );
+
   const filteredMonitors = useMemo(() => {
     if (!data) return [];
     const q = query.trim().toLowerCase();
     return data.monitors.filter(m => {
       if (category !== 'all' && m.category !== category) return false;
+      if (tierFilter === 'critical' && m.tier !== 'critical') return false;
       if (statusFilter === 'critical' && m.tier !== 'critical') return false;
       if (
         statusFilter === 'waf' &&
@@ -67,7 +74,7 @@ const Home: FC = () => {
       }
       return true;
     });
-  }, [data, query, category, statusFilter]);
+  }, [data, query, category, statusFilter, tierFilter]);
 
   const totalPages = Math.max(
     1,
@@ -131,6 +138,38 @@ const Home: FC = () => {
               </div>
             </div>
 
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-ed-rule bg-ed-paper-2 px-3 py-2.5">
+              <p className="font-sans-ed text-xs text-ed-ink-3">
+                <strong>Critical</strong> marks {criticalCount} curated,
+                high-impact citizen portals checked every 5 minutes; standard
+                portals are checked every 15 minutes.{' '}
+                <Link to="/about" className="text-ed-navy hover:underline">
+                  Learn more
+                </Link>
+                .
+              </p>
+              <div
+                className="ml-auto flex items-center gap-1.5"
+                role="group"
+                aria-label="Filter by portal tier"
+              >
+                <Button
+                  size="sm"
+                  variant={tierFilter !== 'critical' ? 'solid' : 'ghost'}
+                  onClick={() => updateParam('tier', 'all')}
+                >
+                  All ({data.monitors.length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={tierFilter === 'critical' ? 'solid' : 'ghost'}
+                  onClick={() => updateParam('tier', 'critical')}
+                >
+                  Critical ({criticalCount})
+                </Button>
+              </div>
+            </div>
+
             <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-[1fr_240px_180px]">
               <div className="relative">
                 <SearchIcon
@@ -176,7 +215,6 @@ const Home: FC = () => {
                   className="h-11 w-full appearance-none border border-ed-rule-strong bg-white pl-3 pr-9 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
                 >
                   <option value="all">All statuses</option>
-                  <option value="critical">Critical only (5m)</option>
                   <option value="down">Down</option>
                   <option value="degraded">Degraded</option>
                   <option value="waf">Probe Blocked (WAF)</option>

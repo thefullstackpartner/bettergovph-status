@@ -34,9 +34,9 @@ describe('scheduler tiering and batching', () => {
     expect(due.map(m => m.slug)).toEqual(['crit-1', 'std-1']);
   });
 
-  it('chunks arrays into batches of at most BATCH_SIZE (40)', () => {
+  it('chunks arrays into batches of at most BATCH_SIZE (20)', () => {
     const items = Array.from({ length: 85 }, (_, i) => i);
     const chunks = chunkArray(items, BATCH_SIZE);
-    expect(chunks.map(c => c.length)).toEqual([40, 40, 5]);
+    expect(chunks.map(c => c.length)).toEqual([20, 20, 20, 20, 5]);
   });
 });

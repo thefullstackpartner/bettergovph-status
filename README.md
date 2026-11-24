@@ -16,9 +16,9 @@ Goals:
 
 ## Features
 
-- Tiered check intervals: **5 minutes** for critical citizen portals, **15 minutes** for standard agency websites
+- Tiered check intervals: **5 minutes** for the **31 curated Critical** citizen portals (`src/data/monitors/curated.json`), **15 minutes** for standard agency websites (`src/data/monitors/imported/*.json`), plus a daily cleanup cron at `16:15 UTC` (`00:15 Asia/Manila`) to prune raw checks older than 30 days
 - Uptime Kuma-style 24-hour / 45-day / 90-day uptime bars with color-coded status legend (Operational, Degraded / partial outage, Probe Blocked (WAF), Down / Under Maintenance, No data) and response-time charts (`24h`, `7d`, `30d`, `90d`)
-- Clickable overall status filters on the homepage and dedicated `/about` methodology & agency allowlisting documentation
+- Quick **All / Critical** tier toggle and clickable overall status filters on the homepage, plus dedicated `/about` methodology & agency allowlisting documentation
 - 2-strike incident detection (opens on 2 consecutive `down` checks, resolves on 2 consecutive non-down checks) with human-readable cause explanations
 - Data-as-code monitor definitions validated by JSON Schema
 - Hono-powered Cloudflare Worker API with edge-cached responses (`Cache-Control: s-maxage=60`) to absorb public traffic
