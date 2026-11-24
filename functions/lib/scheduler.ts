@@ -3,7 +3,7 @@ import type { CheckResult, Env, MonitorDefinition } from '../types';
 import { enabledMonitors, getMonitorBySlug } from './monitors';
 import { recordChecks } from './supabase';
 
-export const BATCH_SIZE = 20;
+export const BATCH_SIZE = 16;
 
 export function selectDueMonitors(
   monitors: MonitorDefinition[],
@@ -99,7 +99,7 @@ export async function runCycle(
   }
 
   // Inline fallback for local dev or when CHECK_QUEUE is not bound.
-  // Cap at 1 batch (20 monitors) to stay under the free 50-subrequest limit.
+  // Cap at 1 batch (16 monitors) to stay under the free 50-subrequest limit.
   const firstBatch = batches[0] ?? [];
   if (firstBatch.length > 0) {
     await processBatch(firstBatch, env);

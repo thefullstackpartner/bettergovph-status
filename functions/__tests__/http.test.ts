@@ -86,4 +86,26 @@ describe('httpCheck', () => {
     expect(res.http_status).toBe(200);
     expect(res.error).toBe('maintenance');
   });
+
+  it('bounds redirects to at most 2 hops', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(null, { status: 301, headers: { location: '/step-1' } })
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: '/step-2' } })
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: '/step-3' } })
+      );
+
+    const res = await httpCheck(baseMonitor, {
+      userAgent: 'test-agent',
+      colo: 'SIN',
+    });
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
+    expect(res.status).toBe('up');
+    expect(res.http_status).toBe(302);
+  });
 });

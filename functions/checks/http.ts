@@ -13,9 +13,29 @@ const DEFAULT_MAINTENANCE_PHRASES = [
 ];
 
 const MAX_SNIPPET_BYTES = 16_384;
+const MAX_REDIRECTS = 2;
 
 function classifyHttpFailure(status: number): string {
   return status === 404 ? 'not_found' : 'unexpected_status';
+}
+
+async function fetchWithBoundedRedirects(
+  initialUrl: string,
+  init: RequestInit,
+  maxRedirects = MAX_REDIRECTS
+): Promise<Response> {
+  let currentUrl = initialUrl;
+  for (let hop = 0; hop <= maxRedirects; hop++) {
+    const res = await fetch(currentUrl, { ...init, redirect: 'manual' });
+    const isRedirect = res.status >= 300 && res.status < 400;
+    const location = res.headers.get('location');
+    if (!isRedirect || !location || hop === maxRedirects) {
+      return res;
+    }
+    await res.body?.cancel().catch(() => {});
+    currentUrl = new URL(location, currentUrl).toString();
+  }
+  throw new Error('redirect_limit');
 }
 
 export function classifyFetchError(err: unknown): string {
@@ -123,9 +143,8 @@ export const httpCheck: CheckRunner = async (monitor, ctx) => {
   const degradedMs = monitor.degradedMs ?? 3_000;
 
   try {
-    const res = await fetch(monitor.url, {
+    const res = await fetchWithBoundedRedirects(monitor.url, {
       method: monitor.method ?? 'GET',
-      redirect: 'follow',
       headers: {
         'User-Agent': ctx.userAgent,
         Accept: 'text/html,application/xhtml+xml,*/*;q=0.8',
