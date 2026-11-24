@@ -7,3 +7,4 @@ export { default as ArrowLink } from './ArrowLink';
 export { default as Flag } from './Flag';
 export { default as Notice } from './Notice';
 export { default as Pagination } from './Pagination';
+export { default as InfoHint } from './InfoHint';

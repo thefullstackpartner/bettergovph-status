@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpDownIcon, SearchIcon } from 'lucide-react';
 import type { CategoryPerformance, MonitorPerformanceRow } from '../../types';
 import { cn } from '../../lib/utils';
-import { Button, Pagination, SectionHeader } from '../ui';
+import { Button, InfoHint, Pagination, SectionHeader } from '../ui';
 
 type SpotlightTab = 'worst' | 'best' | 'slowest' | 'incidents';
 type TableSortKey = 'availabilityPct' | 'cleanUptimePct' | 'avgMs' | 'incidentCount';
@@ -208,26 +208,49 @@ const MonitorLeaderboard: FC<Props> = ({
                 <th className="px-4 py-3">Portal</th>
                 <th className="px-3 py-3">Category</th>
                 <th className="px-3 py-3 text-right">
-                  <button
-                    type="button"
-                    onClick={() => handleSort('availabilityPct')}
-                    className="inline-flex cursor-pointer items-center gap-1 hover:text-ed-ink"
-                  >
-                    Avail %
-                    <ArrowUpDownIcon className="h-3 w-3" />
-                  </button>
+                  <span className="inline-flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('availabilityPct')}
+                      className="inline-flex cursor-pointer items-center gap-1 hover:text-ed-ink"
+                    >
+                      Avail %
+                      <ArrowUpDownIcon className="h-3 w-3" />
+                    </button>
+                    <InfoHint
+                      label="Availability percentage"
+                      align="right"
+                      text="Reachability %: checks that did not fail (up, degraded, or WAF-blocked)."
+                    />
+                  </span>
                 </th>
                 <th className="px-3 py-3 text-right">
-                  <button
-                    type="button"
-                    onClick={() => handleSort('cleanUptimePct')}
-                    className="inline-flex cursor-pointer items-center gap-1 hover:text-ed-ink"
-                  >
-                    Clean %
-                    <ArrowUpDownIcon className="h-3 w-3" />
-                  </button>
+                  <span className="inline-flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('cleanUptimePct')}
+                      className="inline-flex cursor-pointer items-center gap-1 hover:text-ed-ink"
+                    >
+                      Clean %
+                      <ArrowUpDownIcon className="h-3 w-3" />
+                    </button>
+                    <InfoHint
+                      label="Clean uptime percentage"
+                      align="right"
+                      text="Strictly healthy 'up' checks only; excludes down, degraded, and WAF 403."
+                    />
+                  </span>
                 </th>
-                <th className="px-3 py-3 text-right">WAF %</th>
+                <th className="px-3 py-3 text-right">
+                  <span className="inline-flex items-center justify-end gap-1">
+                    WAF %
+                    <InfoHint
+                      label="WAF blocked percentage"
+                      align="right"
+                      text="Checks where a portal's firewall blocked our probe with HTTP 403."
+                    />
+                  </span>
+                </th>
                 <th className="px-3 py-3 text-right">
                   <button
                     type="button"

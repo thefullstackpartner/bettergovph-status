@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { AlertTriangleIcon, ArrowDownRightIcon, ClockIcon, ShieldAlertIcon } from 'lucide-react';
 import type { DashboardKpis } from '../../types';
-import { Eyebrow } from '../ui';
+import { Eyebrow, InfoHint } from '../ui';
 
 type Props = {
   kpis: DashboardKpis;
@@ -17,7 +17,13 @@ const DashboardKpiStrip: FC<Props> = ({ kpis, days, onSelectCategory }) => {
     >
       <div className="border border-ed-rule bg-white p-5">
         <div className="flex items-center justify-between">
-          <Eyebrow>Network Availability</Eyebrow>
+          <span className="inline-flex items-center gap-1.5">
+            <Eyebrow>Network Availability</Eyebrow>
+            <InfoHint
+              label="Network Availability"
+              text="Percentage of checks where portals were reachable (up, slow/degraded, or WAF-blocked). Clean uptime counts strictly healthy 'up' checks only."
+            />
+          </span>
           <ShieldAlertIcon className="h-4 w-4 text-ed-navy" aria-hidden="true" />
         </div>
         <div className="mt-2 font-mono-ed text-3xl font-bold tracking-tight text-ed-ink">
@@ -35,7 +41,13 @@ const DashboardKpiStrip: FC<Props> = ({ kpis, days, onSelectCategory }) => {
 
       <div className="border border-ed-rule bg-white p-5">
         <div className="flex items-center justify-between">
-          <Eyebrow>Weighted Avg Latency</Eyebrow>
+          <span className="inline-flex items-center gap-1.5">
+            <Eyebrow>Weighted Avg Latency</Eyebrow>
+            <InfoHint
+              label="Weighted Avg Latency"
+              text="Average server response time in milliseconds across all checks in the window. Lower is faster."
+            />
+          </span>
           <ClockIcon className="h-4 w-4 text-ed-navy" aria-hidden="true" />
         </div>
         <div className="mt-2 font-mono-ed text-3xl font-bold tracking-tight text-ed-ink">
@@ -51,7 +63,13 @@ const DashboardKpiStrip: FC<Props> = ({ kpis, days, onSelectCategory }) => {
 
       <div className="border border-ed-rule bg-white p-5">
         <div className="flex items-center justify-between">
-          <Eyebrow>Incidents &amp; MTTR</Eyebrow>
+          <span className="inline-flex items-center gap-1.5">
+            <Eyebrow>Incidents &amp; MTTR</Eyebrow>
+            <InfoHint
+              label="Incidents and MTTR"
+              text="An incident opens after 2 consecutive failed checks. MTTR (Mean Time to Resolution) is the average minutes until recovery."
+            />
+          </span>
           <AlertTriangleIcon className="h-4 w-4 text-warning-600" aria-hidden="true" />
         </div>
         <div className="mt-2 font-mono-ed text-3xl font-bold tracking-tight text-ed-ink">
