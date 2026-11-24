@@ -8,7 +8,8 @@ type Props = {
 };
 
 const LINKS = [
-  { label: 'Status Overview', href: '/' },
+  { label: 'Dashboard', href: '/' },
+  { label: 'Status Overview', href: '/status' },
   { label: 'Incidents', href: '/incidents' },
   { label: 'About & Methodology', href: '/about' },
 ];
@@ -25,8 +26,10 @@ const MobileMenu: FC<Props> = ({ onClose }) => {
         {LINKS.map(item => {
           const active =
             item.href === '/'
-              ? pathname === '/'
-              : pathname.startsWith(item.href);
+              ? pathname === '/' || pathname === '/dashboard'
+              : item.href === '/status'
+                ? pathname === '/status' || pathname.startsWith('/monitors')
+                : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}

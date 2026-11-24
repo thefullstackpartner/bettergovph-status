@@ -93,3 +93,96 @@ export interface MonitorHistoryResponse {
   points: CheckPoint[];
   daily: DailyBar[];
 }
+
+export type DashboardRange = '7d' | '30d' | '90d' | '1y';
+export type DashboardTierFilter = 'all' | 'critical' | 'standard';
+
+export interface DashboardKpis {
+  totalMonitors: number;
+  totalChecks: number;
+  availabilityPct: number;
+  cleanUptimePct: number;
+  wafPct: number;
+  degradedPct: number;
+  downPct: number;
+  avgMs: number;
+  maxMs: number;
+  totalIncidents: number;
+  openIncidents: number;
+  mttrMinutes: number | null;
+  worstCategory: {
+    slug: string;
+    name: string;
+    availabilityPct: number;
+    downPct: number;
+    monitorCount: number;
+  } | null;
+}
+
+export interface DashboardDailyPoint {
+  day: string;
+  total: number;
+  up: number;
+  degraded: number;
+  waf: number;
+  down: number;
+  availabilityPct: number;
+  avgMs: number;
+}
+
+export interface CategoryPerformance {
+  slug: string;
+  name: string;
+  description: string;
+  monitorCount: number;
+  checksTotal: number;
+  availabilityPct: number;
+  cleanUptimePct: number;
+  wafPct: number;
+  degradedPct: number;
+  downPct: number;
+  avgMs: number;
+  maxMs: number;
+  incidentCount: number;
+}
+
+export interface MonitorPerformanceRow {
+  slug: string;
+  name: string;
+  agency: string;
+  category: string;
+  categoryName: string;
+  tier: MonitorTier;
+  checksTotal: number;
+  availabilityPct: number;
+  cleanUptimePct: number;
+  wafPct: number;
+  degradedPct: number;
+  downPct: number;
+  avgMs: number;
+  maxMs: number;
+  incidentCount: number;
+}
+
+export interface IncidentCauseSummary {
+  cause: string;
+  count: number;
+  pct: number;
+}
+
+export interface DashboardResponse {
+  generatedAt: string;
+  range: DashboardRange;
+  days: number;
+  tier: DashboardTierFilter;
+  isMock?: boolean;
+  kpis: DashboardKpis;
+  dailyTrend: DashboardDailyPoint[];
+  categories: CategoryPerformance[];
+  monitors: MonitorPerformanceRow[];
+  worstPerformers: MonitorPerformanceRow[];
+  bestPerformers: MonitorPerformanceRow[];
+  slowestMonitors: MonitorPerformanceRow[];
+  mostIncidents: MonitorPerformanceRow[];
+  incidentCauses: IncidentCauseSummary[];
+}

@@ -4,7 +4,8 @@ import { Container } from '../ui';
 import { cn } from '../../lib/utils';
 
 const NAV_ITEMS = [
-  { label: 'Status Overview', href: '/' },
+  { label: 'Dashboard', href: '/' },
+  { label: 'Status Overview', href: '/status' },
   { label: 'Incidents', href: '/incidents' },
   { label: 'About & Methodology', href: '/about' },
 ];
@@ -18,8 +19,10 @@ const PrimaryNav: FC = () => {
         {NAV_ITEMS.map(item => {
           const active =
             item.href === '/'
-              ? pathname === '/' || pathname.startsWith('/monitors')
-              : pathname.startsWith(item.href);
+              ? pathname === '/' || pathname === '/dashboard'
+              : item.href === '/status'
+                ? pathname === '/status' || pathname.startsWith('/monitors')
+                : pathname.startsWith(item.href);
 
           return (
             <Link

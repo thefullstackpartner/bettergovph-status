@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { onDashboardRequest } from './api/dashboard';
 import { onMonitorHistoryRequest } from './api/history';
 import { onIncidentsRequest } from './api/incidents';
 import { onMonitorDetailRequest, onMonitorsRequest } from './api/monitors';
@@ -11,7 +12,7 @@ import {
   requireSupabaseEnv,
 } from './lib/request-security';
 import { processBatch, runCycle } from './lib/scheduler';
-import { pruneOldChecks } from './lib/supabase';
+import { pruneOldChecks, pruneOldDailyStats } from './lib/supabase';
 import type { BatchMessage, Env } from './types';
 
 export const app = new Hono<{ Bindings: Env }>().basePath('/api');
@@ -22,6 +23,7 @@ app.use('*', rateLimitMiddleware);
 app.use('*', requireSupabaseEnv);
 
 app.get('/summary', onSummaryRequest);
+app.get('/dashboard', onDashboardRequest);
 app.get('/monitors', onMonitorsRequest);
 app.get('/monitors/:slug{[a-z0-9-]+}', onMonitorDetailRequest);
 app.get('/monitors/:slug{[a-z0-9-]+}/history', onMonitorHistoryRequest);
@@ -50,8 +52,13 @@ export default {
 
     if (controller.cron === '15 16 * * *') {
       ctx.waitUntil(
-        pruneOldChecks(env, 30).then(deleted =>
-          console.log(`[prune] Deleted ${deleted} raw check rows older than 30d`)
+        Promise.all([
+          pruneOldChecks(env, 30),
+          pruneOldDailyStats(env, 365),
+        ]).then(([deletedChecks, deletedDaily]) =>
+          console.log(
+            `[prune] Deleted ${deletedChecks} raw checks (>30d) and ${deletedDaily} daily stats (>365d)`
+          )
         )
       );
       return;

@@ -101,6 +101,20 @@ const INCIDENT_CAUSES: Record<string, IncidentCauseInfo> = {
     label: 'Service Unreachable',
     description: 'The service failed consecutive health checks.',
   },
+  fetch_error: {
+    label: 'Network / Fetch Error',
+    description:
+      'The monitoring probe encountered a network-level failure while reaching the server.',
+  },
+  tls_error: {
+    label: 'TLS / SSL Error',
+    description:
+      'A secure HTTPS connection could not be established due to a TLS handshake or certificate error.',
+  },
+  unknown: {
+    label: 'Unspecified Failure',
+    description: 'The service failed consecutive health checks without a specific error code.',
+  },
 };
 
 export function formatIncidentCause(cause: string): IncidentCauseInfo {

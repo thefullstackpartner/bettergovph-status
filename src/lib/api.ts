@@ -1,4 +1,7 @@
 import type {
+  DashboardRange,
+  DashboardResponse,
+  DashboardTierFilter,
   MonitorDetailResponse,
   MonitorHistoryResponse,
   SummaryResponse,
@@ -46,4 +49,13 @@ export function getIncidents(status: 'open' | 'all', page = 1) {
     page: number;
     pageSize: number;
   }>(`/api/incidents?status=${status}&page=${page}`);
+}
+
+export function getDashboard(
+  range: DashboardRange,
+  tier: DashboardTierFilter
+): Promise<DashboardResponse> {
+  return fetchJson<DashboardResponse>(
+    `/api/dashboard?range=${encodeURIComponent(range)}&tier=${encodeURIComponent(tier)}`
+  );
 }

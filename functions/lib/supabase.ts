@@ -78,6 +78,75 @@ export async function pruneOldChecks(env: Env, days = 30): Promise<number> {
   return Number(data ?? 0);
 }
 
+export interface DashboardDbPayload {
+  days: number;
+  monitors: Array<{
+    monitor_slug: string;
+    total: number;
+    up: number;
+    degraded: number;
+    waf: number;
+    down: number;
+    sum_ms: number;
+    max_ms: number;
+  }>;
+  daily: Array<{
+    day: string;
+    total: number;
+    up: number;
+    degraded: number;
+    waf: number;
+    down: number;
+    avg_ms: number;
+  }>;
+  incidents: {
+    totalIncidents: number;
+    openIncidents: number;
+    avgResolutionSec: number | null;
+    byMonitor: Array<{ monitor_slug: string; count: number }>;
+    topCauses: Array<{ cause: string; count: number }>;
+  };
+}
+
+export async function pruneOldDailyStats(
+  env: Env,
+  days = 365
+): Promise<number> {
+  const supabase = getSupabase(env);
+  const { data, error } = await supabase.rpc('bgovph_prune_daily_stats', {
+    p_days: days,
+  });
+  if (error) {
+    throw new Error(`bgovph_prune_daily_stats failed: ${error.message}`);
+  }
+  return Number(data ?? 0);
+}
+
+export async function fetchDashboardFromDb(
+  env: Env,
+  days: number
+): Promise<DashboardDbPayload> {
+  const supabase = getSupabase(env);
+  const { data, error } = await supabase.rpc('bgovph_get_dashboard', {
+    p_days: days,
+  });
+  if (error) {
+    throw new Error(`bgovph_get_dashboard failed: ${error.message}`);
+  }
+  return (data ?? {
+    days,
+    monitors: [],
+    daily: [],
+    incidents: {
+      totalIncidents: 0,
+      openIncidents: 0,
+      avgResolutionSec: null,
+      byMonitor: [],
+      topCauses: [],
+    },
+  }) as DashboardDbPayload;
+}
+
 export async function fetchSummaryFromDb(env: Env): Promise<SummaryDbPayload> {
   const supabase = getSupabase(env);
   const { data, error } = await supabase.rpc('bgovph_get_summary');
