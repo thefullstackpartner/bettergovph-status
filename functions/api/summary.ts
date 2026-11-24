@@ -1,10 +1,10 @@
+import type { Context } from 'hono';
 import type { Env } from '../types';
-import { jsonResponse } from '../lib/router';
 import { getSummarySnapshot } from '../lib/snapshot';
 
-export async function onSummaryRequest(env: Env): Promise<Response> {
-  const snapshot = await getSummarySnapshot(env);
-  return jsonResponse(snapshot, {
-    cacheControl: 'public, max-age=30, s-maxage=60',
+export async function onSummaryRequest(c: Context<{ Bindings: Env }>) {
+  const snapshot = await getSummarySnapshot(c.env);
+  return c.json(snapshot, 200, {
+    'Cache-Control': 'public, max-age=30, s-maxage=60',
   });
 }

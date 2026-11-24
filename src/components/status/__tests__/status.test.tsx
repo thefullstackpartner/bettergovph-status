@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { OverallBanner, UptimeBars } from '../index';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { OverallBanner, StatusPill, UptimeBars } from '../index';
 import type { SummaryResponse } from '../../../types';
 
 const baseSummary: SummaryResponse = {
@@ -18,9 +18,22 @@ const baseSummary: SummaryResponse = {
 };
 
 describe('status UI components', () => {
-  it('renders OverallBanner with down count', () => {
-    render(<OverallBanner summary={baseSummary} />);
+  it('renders OverallBanner with down count and clickable status filters', () => {
+    const onFilterStatus = vi.fn();
+    render(
+      <OverallBanner
+        summary={baseSummary}
+        activeStatus="all"
+        onFilterStatus={onFilterStatus}
+      />
+    );
     expect(screen.getByText('1 service currently down')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '1 down' }));
+    expect(onFilterStatus).toHaveBeenCalledWith('down');
+
+    fireEvent.click(screen.getByRole('button', { name: '9 up' }));
+    expect(onFilterStatus).toHaveBeenCalledWith('up');
   });
 
   it('renders accessible daily UptimeBars with aria-labels', () => {
@@ -78,5 +91,22 @@ describe('status UI components', () => {
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(6);
     expect(items[5].getAttribute('aria-label')).toContain('100% up');
+  });
+
+  it('renders WAF and maintenance context in StatusPill', () => {
+    const { rerender } = render(
+      <StatusPill status="degraded" error="waf_403" />
+    );
+    const wafLabel = screen.getByText('Probe Blocked (WAF)');
+    expect(wafLabel).toBeInTheDocument();
+    expect(wafLabel.parentElement?.getAttribute('title')).toContain(
+      'accessible in your browser'
+    );
+
+    rerender(<StatusPill status="down" error="maintenance" />);
+    expect(screen.getByText('Under Maintenance')).toBeInTheDocument();
+
+    rerender(<StatusPill status="degraded" />);
+    expect(screen.getByText('Degraded')).toBeInTheDocument();
   });
 });

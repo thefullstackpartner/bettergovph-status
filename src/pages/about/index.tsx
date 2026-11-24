@@ -32,8 +32,12 @@ const AboutPage: FC = () => {
         ranges or place JavaScript WAF challenges (such as Cloudflare Bot Fight
         Mode or AWS WAF) in front of their pages. Plain HTTP probes cannot
         execute JavaScript challenges, so WAF-blocked portals are flagged as{' '}
-        <strong>Degraded (WAF 403)</strong> rather than Down. Every check
-        records the Cloudflare colo that executed it.
+        <strong>Probe Blocked (WAF)</strong> (<code>degraded</code>{' '}
+        internally) rather than Down. Because the firewall blocks our probe
+        before it reaches the origin server, we cannot see whether the portal
+        behind it is operational or under maintenance—it may still be accessible
+        normally in your browser. Every check records the Cloudflare colo that
+        executed it.
       </Notice>
 
       <section>
@@ -55,15 +59,16 @@ const AboutPage: FC = () => {
             </li>
             <li>
               <strong>Degraded:</strong> Reachable, but response took longer
-              than 3,000 ms, returned HTTP <code>403</code> from a WAF/bot
-              challenge, or returned an HTML page containing a maintenance
-              notice (e.g., &ldquo;under maintenance&rdquo;, &ldquo;scheduled
-              maintenance&rdquo;).
+              than 3,000 ms, or returned HTTP <code>403</code> from a WAF/bot
+              challenge (shown as <strong>Probe Blocked (WAF)</strong>).
             </li>
             <li>
               <strong>Down:</strong> Timeout (15 s), DNS/TLS/connection failure,
-              missing expected keyword, or HTTP 4xx/5xx status (other than WAF{' '}
-              <code>403</code>).
+              missing expected keyword, HTTP 4xx/5xx status (other than WAF{' '}
+              <code>403</code>), or an HTML page displaying a maintenance notice
+              (shown as <strong>Under Maintenance</strong>, e.g., &ldquo;under
+              maintenance&rdquo;, &ldquo;scheduled maintenance&rdquo;) since
+              citizens cannot transact.
             </li>
             <li>
               <strong>Incidents &amp; Retention:</strong> An incident opens
@@ -77,7 +82,7 @@ const AboutPage: FC = () => {
       </section>
 
       <section>
-        <SectionHeader label="Probe Behavior &amp; Agency Opt-Out" />
+        <SectionHeader label="Probe Behavior, Allowlisting &amp; Agency Opt-Out" />
         <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <p>
             Every probe identifies itself with an honest User-Agent header:{' '}
@@ -94,9 +99,19 @@ const AboutPage: FC = () => {
             back to a minimal TLS socket <code>HEAD</code> status-line check.
           </p>
           <p>
-            If you manage a government portal and need us to adjust a check
-            endpoint, expected status codes, or opt out, please open an issue in
-            the GitHub repository.
+            We are actively reaching out to government agencies—and welcome
+            agency IT teams—to allowlist{' '}
+            <code className="bg-ed-paper-2 px-1.5 py-0.5 font-mono-ed text-xs">
+              bettergovph-status/1.0
+            </code>{' '}
+            in their WAF rules or expose a lightweight unblocked{' '}
+            <code className="bg-ed-paper-2 px-1.5 py-0.5 font-mono-ed text-xs">
+              /health
+            </code>{' '}
+            endpoint so we can report accurate origin availability instead of{' '}
+            <strong>Probe Blocked (WAF)</strong>. If you manage a government
+            portal and need us to adjust a check endpoint, expected status
+            codes, or opt out, please open an issue in the GitHub repository.
           </p>
         </Card>
       </section>

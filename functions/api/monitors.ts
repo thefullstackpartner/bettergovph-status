@@ -1,34 +1,32 @@
+import type { Context } from 'hono';
 import type { Env } from '../types';
 import { getMonitorBySlug } from '../lib/monitors';
-import { jsonResponse } from '../lib/router';
 import { getSummarySnapshot } from '../lib/snapshot';
 import { fetchMonitorIncidents } from '../lib/supabase';
 
-export async function onMonitorsRequest(env: Env): Promise<Response> {
-  const snapshot = await getSummarySnapshot(env);
-  return jsonResponse(
+export async function onMonitorsRequest(c: Context<{ Bindings: Env }>) {
+  const snapshot = await getSummarySnapshot(c.env);
+  return c.json(
     { generatedAt: snapshot.generatedAt, monitors: snapshot.monitors },
-    { cacheControl: 'public, max-age=30, s-maxage=60' }
+    200,
+    { 'Cache-Control': 'public, max-age=30, s-maxage=60' }
   );
 }
 
-export async function onMonitorDetailRequest(
-  env: Env,
-  slug: string
-): Promise<Response> {
+export async function onMonitorDetailRequest(c: Context<{ Bindings: Env }>) {
+  const slug = c.req.param('slug') ?? '';
   const def = getMonitorBySlug(slug);
   if (!def) {
-    return jsonResponse({ error: 'Monitor not found' }, { status: 404 });
+    return c.json({ error: 'Monitor not found' }, 404);
   }
 
   const [snapshot, incidents] = await Promise.all([
-    getSummarySnapshot(env),
-    fetchMonitorIncidents(env, slug, 20),
+    getSummarySnapshot(c.env),
+    fetchMonitorIncidents(c.env, slug, 20),
   ]);
 
   const monitor = snapshot.monitors.find(m => m.slug === slug);
-  return jsonResponse(
-    { monitor, incidents },
-    { cacheControl: 'public, max-age=30, s-maxage=60' }
-  );
+  return c.json({ monitor, incidents }, 200, {
+    'Cache-Control': 'public, max-age=30, s-maxage=60',
+  });
 }

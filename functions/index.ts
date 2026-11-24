@@ -1,64 +1,42 @@
+import { Hono } from 'hono';
 import { onMonitorHistoryRequest } from './api/history';
 import { onIncidentsRequest } from './api/incidents';
 import { onMonitorDetailRequest, onMonitorsRequest } from './api/monitors';
 import { onSummaryRequest } from './api/summary';
 import { onTriggerRequest } from './api/trigger';
-import { withRequestSecurity } from './lib/request-security';
-import { jsonResponse } from './lib/router';
+import {
+  corsMiddleware,
+  rateLimitMiddleware,
+  rejectDisallowedOrigin,
+  requireSupabaseEnv,
+} from './lib/request-security';
 import { processBatch, runCycle } from './lib/scheduler';
 import { refreshSummarySnapshot } from './lib/snapshot';
 import { pruneOldChecks } from './lib/supabase';
 import type { BatchMessage, Env } from './types';
 
-function notConfigured(missing: string[]): Response {
-  return jsonResponse(
-    {
-      error: 'Not configured',
-      message: `Missing required binding(s) or secret(s): ${missing.join(', ')}. See functions/README.md.`,
-      missingBindings: missing,
-    },
-    { status: 503 }
-  );
-}
+export const app = new Hono<{ Bindings: Env }>().basePath('/api');
 
-async function routeApi(request: Request, env: Env): Promise<Response> {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-    return notConfigured(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
-  }
+app.use('*', rejectDisallowedOrigin);
+app.use('*', corsMiddleware);
+app.use('*', rateLimitMiddleware);
+app.use('*', requireSupabaseEnv);
 
-  const url = new URL(request.url);
-  const path = url.pathname;
+app.get('/summary', onSummaryRequest);
+app.get('/monitors', onMonitorsRequest);
+app.get('/monitors/:slug{[a-z0-9-]+}', onMonitorDetailRequest);
+app.get('/monitors/:slug{[a-z0-9-]+}/history', onMonitorHistoryRequest);
+app.get('/incidents', onIncidentsRequest);
+app.post('/trigger', onTriggerRequest);
 
-  if (request.method === 'POST' && path === '/api/trigger') {
-    return onTriggerRequest(request, env);
-  }
+app.notFound(c => c.json({ error: 'Not found' }, 404));
 
-  if (request.method !== 'GET') {
-    return jsonResponse({ error: 'Method not allowed' }, { status: 405 });
-  }
+app.onError((err, c) => {
+  console.error('[api]', err.message);
+  return c.json({ error: 'Internal server error' }, 500);
+});
 
-  if (path === '/api/summary') {
-    return onSummaryRequest(env);
-  }
-  if (path === '/api/monitors') {
-    return onMonitorsRequest(env);
-  }
-  if (path === '/api/incidents') {
-    return onIncidentsRequest(request, env);
-  }
-
-  const historyMatch = path.match(/^\/api\/monitors\/([a-z0-9-]+)\/history$/);
-  if (historyMatch) {
-    return onMonitorHistoryRequest(request, env, historyMatch[1]);
-  }
-
-  const detailMatch = path.match(/^\/api\/monitors\/([a-z0-9-]+)$/);
-  if (detailMatch) {
-    return onMonitorDetailRequest(env, detailMatch[1]);
-  }
-
-  return jsonResponse({ error: 'Not found' }, { status: 404 });
-}
+export type AppType = typeof app;
 
 export default {
   async scheduled(
@@ -95,15 +73,5 @@ export default {
     await refreshSummarySnapshot(env);
   },
 
-  async fetch(request: Request, env: Env): Promise<Response> {
-    return withRequestSecurity(request, env, async () => {
-      try {
-        return await routeApi(request, env);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Internal error';
-        console.error('[api]', message);
-        return jsonResponse({ error: 'Internal server error' }, { status: 500 });
-      }
-    });
-  },
+  fetch: app.fetch,
 } satisfies ExportedHandler<Env, BatchMessage>;

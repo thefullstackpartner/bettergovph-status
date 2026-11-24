@@ -1,39 +1,32 @@
+import type { Context } from 'hono';
 import type { Env } from '../types';
-import { jsonResponse } from '../lib/router';
 import { runCycle } from '../lib/scheduler';
 
 /**
  * Manual status check trigger for local development (or authorized automation).
  * Disabled unless ALLOW_MANUAL_TRIGGER === 'true' or Bearer TRIGGER_SECRET matches.
  */
-export async function onTriggerRequest(
-  request: Request,
-  env: Env
-): Promise<Response> {
-  const allowLocal = env.ALLOW_MANUAL_TRIGGER === 'true';
-  const authHeader = request.headers.get('Authorization');
+export async function onTriggerRequest(c: Context<{ Bindings: Env }>) {
+  const allowLocal = c.env.ALLOW_MANUAL_TRIGGER === 'true';
+  const authHeader = c.req.header('Authorization');
   const validSecret =
-    Boolean(env.TRIGGER_SECRET) &&
-    authHeader === `Bearer ${env.TRIGGER_SECRET}`;
+    Boolean(c.env.TRIGGER_SECRET) &&
+    authHeader === `Bearer ${c.env.TRIGGER_SECRET}`;
 
   if (!allowLocal && !validSecret) {
-    return jsonResponse(
-      { error: 'Manual trigger is disabled' },
-      { status: 403 }
-    );
+    return c.json({ error: 'Manual trigger is disabled' }, 403);
   }
 
-  const url = new URL(request.url);
-  const rawTier = url.searchParams.get('tier');
+  const rawTier = c.req.query('tier');
   const tier =
     rawTier === 'critical' || rawTier === 'standard' || rawTier === 'all'
       ? rawTier
       : 'critical';
-  const rawLimit = Number(url.searchParams.get('limit') ?? '0');
+  const rawLimit = Number(c.req.query('limit') ?? '0');
   const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : undefined;
-  const rawOffset = Number(url.searchParams.get('offset') ?? '0');
+  const rawOffset = Number(c.req.query('offset') ?? '0');
   const offset = Number.isFinite(rawOffset) && rawOffset > 0 ? rawOffset : 0;
 
-  const result = await runCycle(env, { tier, limit, offset });
-  return jsonResponse({ ok: true, ...result });
+  const result = await runCycle(c.env, { tier, limit, offset });
+  return c.json({ ok: true, ...result });
 }

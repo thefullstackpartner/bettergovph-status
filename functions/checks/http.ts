@@ -208,7 +208,7 @@ export const httpCheck: CheckRunner = async (monitor, ctx) => {
         return {
           monitor_slug: monitor.slug,
           checked_at: checkedAt,
-          status: 'degraded',
+          status: 'down',
           http_status: res.status,
           response_ms: responseMs,
           error: 'maintenance',

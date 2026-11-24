@@ -4,6 +4,7 @@ import type { CheckStatus } from '../../types';
 
 type Props = {
   status: CheckStatus | 'unknown';
+  error?: string | null;
   className?: string;
 };
 
@@ -33,10 +34,24 @@ const STYLES: Record<
   },
 };
 
-const StatusPill: FC<Props> = ({ status, className }) => {
+const StatusPill: FC<Props> = ({ status, error, className }) => {
   const cfg = STYLES[status];
+  const isWaf = status === 'degraded' && error === 'waf_403';
+  const isMaintenance = status === 'down' && error === 'maintenance';
+  const label = isWaf
+    ? 'Probe Blocked (WAF)'
+    : isMaintenance
+      ? 'Under Maintenance'
+      : cfg.label;
+  const title = isWaf
+    ? 'This portal’s firewall blocked automated monitoring; it may still be accessible in your browser.'
+    : isMaintenance
+      ? 'This portal is displaying a maintenance page and cannot currently be used.'
+      : undefined;
+
   return (
     <span
+      title={title}
       className={cn(
         'inline-flex items-center gap-1.5 border px-2.5 py-0.5 font-mono-ed text-[11px] font-medium uppercase tracking-[0.06em]',
         cfg.pill,
@@ -44,7 +59,7 @@ const StatusPill: FC<Props> = ({ status, className }) => {
       )}
     >
       <span className={cn('h-2 w-2 rounded-full', cfg.dot)} aria-hidden="true" />
-      <span>{cfg.label}</span>
+      <span>{label}</span>
     </span>
   );
 };

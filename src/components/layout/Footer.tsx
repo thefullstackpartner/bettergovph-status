@@ -19,8 +19,7 @@ const Footer: FC = () => {
             </h3>
             <p className="mt-2 leading-relaxed text-ed-ink-3">
               Open-source, edge-native uptime monitoring for Philippine
-              government portals. Built on Cloudflare Workers and Supabase,
-              inspired by BetterGov.ph.
+              government portals, inspired by BetterGov.ph.
             </p>
           </div>
 

@@ -69,7 +69,7 @@ describe('httpCheck', () => {
       userAgent: 'test-agent',
       colo: 'SIN',
     });
-    expect(res.status).toBe('degraded');
+    expect(res.status).toBe('down');
     expect(res.http_status).toBe(200);
     expect(res.error).toBe('maintenance');
   });

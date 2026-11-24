@@ -1,3 +1,5 @@
+import type { MiddlewareHandler } from 'hono';
+import { cors } from 'hono/cors';
 import type { Env } from '../types';
 
 const ALLOWED_EXACT_ORIGINS = new Set([
@@ -5,7 +7,7 @@ const ALLOWED_EXACT_ORIGINS = new Set([
   'https://www.bettergov.ph',
 ]);
 
-function isAllowedOrigin(origin: string): boolean {
+export function isAllowedOrigin(origin: string): boolean {
   if (ALLOWED_EXACT_ORIGINS.has(origin)) return true;
   try {
     const url = new URL(origin);
@@ -30,58 +32,60 @@ function isAllowedOrigin(origin: string): boolean {
   return false;
 }
 
-function applyCorsHeaders(headers: Headers, origin: string | null) {
-  if (!origin || !isAllowedOrigin(origin)) return;
-  headers.set('Access-Control-Allow-Origin', origin);
-  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  headers.set('Access-Control-Expose-Headers', 'RateLimit-Limit');
-  headers.set('Vary', 'Origin');
-}
-
-export async function withRequestSecurity(
-  request: Request,
-  env: Env,
-  handler: () => Promise<Response>
-): Promise<Response> {
-  const origin = request.headers.get('Origin');
-
+export const rejectDisallowedOrigin: MiddlewareHandler<{
+  Bindings: Env;
+}> = async (c, next) => {
+  const origin = c.req.header('Origin');
   if (origin && !isAllowedOrigin(origin)) {
-    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return c.json({ error: 'Origin not allowed' }, 403);
   }
+  await next();
+};
 
-  if (request.method === 'OPTIONS') {
-    const headers = new Headers();
-    applyCorsHeaders(headers, origin);
-    return new Response(null, { status: 204, headers });
-  }
+export const corsMiddleware = cors({
+  origin: (origin) => (origin && isAllowedOrigin(origin) ? origin : ''),
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  exposeHeaders: ['RateLimit-Limit'],
+});
 
-  if (env.API_RATE_LIMITER) {
-    const ip = request.headers.get('CF-Connecting-IP') ?? 'local-fallback';
-    const { success } = await env.API_RATE_LIMITER.limit({ key: ip });
+export const rateLimitMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (
+  c,
+  next
+) => {
+  if (c.env.API_RATE_LIMITER) {
+    const ip = c.req.header('CF-Connecting-IP') ?? 'local-fallback';
+    const { success } = await c.env.API_RATE_LIMITER.limit({ key: ip });
     if (!success) {
-      const headers = new Headers({
-        'Content-Type': 'application/json',
+      return c.json({ error: 'Too many requests' }, 429, {
         'Retry-After': '60',
         'RateLimit-Limit': '120',
         'RateLimit-Remaining': '0',
       });
-      applyCorsHeaders(headers, origin);
-      return new Response(JSON.stringify({ error: 'Too many requests' }), {
-        status: 429,
-        headers,
-      });
     }
   }
 
-  const response = await handler();
-  const wrapped = new Response(response.body, response);
-  if (env.API_RATE_LIMITER) {
-    wrapped.headers.set('RateLimit-Limit', '120');
+  await next();
+
+  if (c.env.API_RATE_LIMITER) {
+    c.header('RateLimit-Limit', '120');
   }
-  applyCorsHeaders(wrapped.headers, origin);
-  return wrapped;
-}
+};
+
+export const requireSupabaseEnv: MiddlewareHandler<{ Bindings: Env }> = async (
+  c,
+  next
+) => {
+  if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const missing = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+    return c.json(
+      {
+        error: 'Not configured',
+        message: `Missing required binding(s) or secret(s): ${missing.join(', ')}. See functions/README.md.`,
+        missingBindings: missing,
+      },
+      503
+    );
+  }
+  await next();
+};

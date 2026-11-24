@@ -111,8 +111,16 @@ const MonitorDetailPage: FC = () => {
                   <ExternalLinkIcon size={12} />
                 </a>
               </div>
-              <StatusPill status={m.status} />
+              <StatusPill status={m.status} error={m.lastError} />
             </div>
+
+            {m.lastError === 'waf_403' && (
+              <Notice tone="info" className="mt-4">
+                This portal’s firewall (WAF) blocked automated monitoring
+                probes (`403`). It may still be accessible normally in your
+                browser.
+              </Notice>
+            )}
 
             <div className="mt-6 grid grid-cols-2 gap-4 border-t border-ed-rule pt-5 md:grid-cols-4">
               <div>

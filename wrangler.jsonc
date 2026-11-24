@@ -2,10 +2,9 @@
   "name": "bettergovph-status",
   "main": "functions/index.ts",
   "compatibility_date": "2026-11-01",
-  "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "triggers": {
-    "crons": ["*/5 * * * *"]
+    "crons": ["*/5 * * * *", "15 16 * * *"]
   },
   "assets": {
     "directory": "./dist",

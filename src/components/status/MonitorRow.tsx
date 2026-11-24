@@ -22,11 +22,6 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
           >
             {monitor.name}
           </Link>
-          {monitor.tier === 'critical' && (
-            <span className="border border-ed-navy/30 bg-ed-navy-tint px-1.5 py-0.5 font-mono-ed text-[10px] uppercase tracking-[0.1em] text-ed-navy">
-              5m
-            </span>
-          )}
         </div>
         <p className="mt-0.5 font-sans-ed text-xs text-ed-ink-3">
           {monitor.agency}
@@ -56,7 +51,7 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
                 : `24h: ${formatUptime(monitor.uptime24h)}`}
           </div>
         </div>
-        <StatusPill status={monitor.status} />
+        <StatusPill status={monitor.status} error={monitor.lastError} />
       </div>
     </div>
 

@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { RefreshCwIcon, SearchIcon } from 'lucide-react';
+import { SearchIcon } from 'lucide-react';
 import {
   Button,
   Container,
@@ -11,16 +11,13 @@ import {
 import { MonitorRow, OverallBanner } from '../components/status';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useSummary } from '../hooks/useSummary';
-import { triggerManualCheck } from '../lib/api';
 
 const PAGE_SIZE = 25;
 
 const Home: FC = () => {
   useDocumentTitle('BetterGovPH Status | Philippine Government Service Uptime');
-  const { data, loading, error, reload } = useSummary();
+  const { data, loading, error } = useSummary();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [triggering, setTriggering] = useState(false);
-  const [triggerMsg, setTriggerMsg] = useState<string | null>(null);
   const [granularity, setGranularity] = useState<'hourly' | 'daily'>('hourly');
 
   const query = searchParams.get('q') ?? '';
@@ -68,24 +65,6 @@ const Home: FC = () => {
     safePage * PAGE_SIZE
   );
 
-  const handleManualTrigger = async () => {
-    setTriggering(true);
-    setTriggerMsg(null);
-    try {
-      const res = await triggerManualCheck('critical');
-      setTriggerMsg(
-        `Checked ${res.scheduledCount} critical portals (${res.mode} mode).`
-      );
-      await reload();
-    } catch (err) {
-      setTriggerMsg(
-        err instanceof Error ? err.message : 'Manual trigger failed.'
-      );
-    } finally {
-      setTriggering(false);
-    }
-  };
-
   return (
     <Container className="py-8">
       {loading && !data && (
@@ -103,36 +82,11 @@ const Home: FC = () => {
 
       {data && (
         <>
-          <OverallBanner summary={data} />
-
-          {import.meta.env.DEV && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border border-ed-rule bg-ed-paper-2 px-4 py-3">
-              <span className="font-mono-ed text-xs text-ed-ink-2">
-                Local dev: cron is paused. Trigger a check cycle manually.
-              </span>
-              <div className="flex items-center gap-3">
-                {triggerMsg && (
-                  <span className="font-mono-ed text-xs text-ed-navy">
-                    {triggerMsg}
-                  </span>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleManualTrigger}
-                  disabled={triggering}
-                >
-                  <RefreshCwIcon
-                    size={14}
-                    className={triggering ? 'animate-spin' : ''}
-                  />
-                  <span>
-                    {triggering ? 'Checking...' : 'Run Critical Checks'}
-                  </span>
-                </Button>
-              </div>
-            </div>
-          )}
+          <OverallBanner
+            summary={data}
+            activeStatus={statusFilter}
+            onFilterStatus={status => updateParam('status', status)}
+          />
 
           <section className="mt-8" aria-label="Filter monitored portals">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -204,6 +158,7 @@ const Home: FC = () => {
                 <option value="down">Down</option>
                 <option value="degraded">Degraded</option>
                 <option value="up">Operational</option>
+                <option value="unknown">Pending</option>
               </select>
             </div>
 

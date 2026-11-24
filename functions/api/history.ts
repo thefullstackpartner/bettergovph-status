@@ -1,30 +1,25 @@
+import type { Context } from 'hono';
 import type { Env } from '../types';
 import { getMonitorBySlug } from '../lib/monitors';
-import { jsonResponse } from '../lib/router';
 import { fetchMonitorHistory } from '../lib/supabase';
 
 const VALID_RANGES = new Set(['24h', '7d', '30d', '90d']);
 
-export async function onMonitorHistoryRequest(
-  request: Request,
-  env: Env,
-  slug: string
-): Promise<Response> {
+export async function onMonitorHistoryRequest(c: Context<{ Bindings: Env }>) {
+  const slug = c.req.param('slug') ?? '';
   if (!getMonitorBySlug(slug)) {
-    return jsonResponse({ error: 'Monitor not found' }, { status: 404 });
+    return c.json({ error: 'Monitor not found' }, 404);
   }
 
-  const url = new URL(request.url);
-  const rawRange = url.searchParams.get('range') ?? '24h';
+  const rawRange = c.req.query('range') ?? '24h';
   const range = (VALID_RANGES.has(rawRange) ? rawRange : '24h') as
     | '24h'
     | '7d'
     | '30d'
     | '90d';
 
-  const history = await fetchMonitorHistory(env, slug, range);
-  return jsonResponse(
-    { slug, range, ...history },
-    { cacheControl: 'public, max-age=60, s-maxage=300' }
-  );
+  const history = await fetchMonitorHistory(c.env, slug, range);
+  return c.json({ slug, range, ...history }, 200, {
+    'Cache-Control': 'public, max-age=60, s-maxage=300',
+  });
 }
