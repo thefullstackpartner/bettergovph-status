@@ -71,20 +71,23 @@ const AboutPage: FC = () => {
               browser, so it is not counted as down.
             </li>
             <li>
-              <strong>Down:</strong> Timeout (15 s), DNS/TLS/connection failure,
+              <strong>Down:</strong> Timeout (15 s, shown as{' '}
+              <strong>Down · Timeout</strong>), DNS/TLS/connection failure,
               missing expected keyword, HTTP 4xx/5xx status (other than WAF{' '}
               <code>403</code>; HTTP <code>404</code> is shown as{' '}
               <strong>Not Found (404)</strong>), or an HTML page displaying a
-              maintenance notice
-              (shown as <strong>Under Maintenance</strong>, e.g., &ldquo;under
-              maintenance&rdquo;, &ldquo;scheduled maintenance&rdquo;) since
-              citizens cannot transact.
+              maintenance notice (shown as <strong>Under Maintenance</strong>,
+              e.g., &ldquo;under maintenance&rdquo;, &ldquo;scheduled
+              maintenance&rdquo;) since citizens cannot transact.
             </li>
             <li>
-              <strong>Incidents &amp; Retention:</strong> An incident opens
-              after <strong>2 consecutive down checks</strong> and resolves
-              after <strong>2 consecutive operational/degraded checks</strong>.
-              Raw check samples are retained for 30 days; daily rollups are kept
+              <strong>Incidents &amp; Retention:</strong> A portal&apos;s
+              status flips to <strong>Down</strong> immediately on the 1st
+              failed check, while an incident opens after{' '}
+              <strong>2 consecutive down checks</strong> (to filter out brief
+              one-off blips) and resolves after{' '}
+              <strong>2 consecutive operational/degraded checks</strong>. Raw
+              check samples are retained for 30 days; daily rollups are kept
               indefinitely.
             </li>
           </ul>

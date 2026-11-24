@@ -19,6 +19,7 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMonitorHistory } from '../../hooks/useMonitorHistory';
 import { getMonitorDetail } from '../../lib/api';
 import {
+  formatIncidentCause,
   formatManilaTimestamp,
   formatMs,
   formatUptime,
@@ -172,10 +173,13 @@ const MonitorDetailPage: FC = () => {
               (`403`). It may still be accessible normally in your browser.
             </Notice>
           )}
-          {m.lastError === 'not_found' && (
+          {m.lastError && m.lastError !== 'waf_403' && (
             <Notice tone="error" className="mt-4">
-              This URL returned HTTP <code>404</code> (Not Found). The server
-              responded, but the monitored page may have moved or been removed.
+              <strong>{formatIncidentCause(m.lastError).label}</strong>
+              {m.lastError === 'unexpected_status' && m.lastHttpStatus
+                ? ` (HTTP ${m.lastHttpStatus})`
+                : ''}
+              : {formatIncidentCause(m.lastError).description}
             </Notice>
           )}
 

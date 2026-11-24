@@ -181,6 +181,11 @@ describe('status UI components', () => {
     expect(notFoundLabel).toBeInTheDocument();
     expect(notFoundLabel.parentElement?.getAttribute('title')).toContain('404');
 
+    rerender(<StatusPill status="down" error="timeout" />);
+    const timeoutLabel = screen.getByText('Down · Timeout');
+    expect(timeoutLabel).toBeInTheDocument();
+    expect(timeoutLabel.parentElement?.getAttribute('title')).toContain('15-second');
+
     rerender(<StatusPill status="degraded" />);
     expect(screen.getByText('Degraded')).toBeInTheDocument();
   });
