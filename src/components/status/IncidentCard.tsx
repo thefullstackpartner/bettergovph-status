@@ -1,6 +1,10 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
-import { formatDuration, formatManilaTimestamp } from '../../lib/format';
+import {
+  formatDuration,
+  formatIncidentCause,
+  formatManilaTimestamp,
+} from '../../lib/format';
 import type { Incident } from '../../types';
 
 type Props = {
@@ -9,6 +13,7 @@ type Props = {
 
 const IncidentCard: FC<Props> = ({ incident }) => {
   const isOpen = incident.resolved_at === null;
+  const causeInfo = incident.cause ? formatIncidentCause(incident.cause) : null;
 
   return (
     <div className="border border-ed-rule bg-white p-5">
@@ -45,8 +50,13 @@ const IncidentCard: FC<Props> = ({ incident }) => {
         <span>
           Duration: {formatDuration(incident.started_at, incident.resolved_at)}
         </span>
-        {incident.cause && <span>Cause: {incident.cause}</span>}
+        {causeInfo && <span>Cause: {causeInfo.label}</span>}
       </div>
+      {causeInfo && (
+        <p className="mt-2 border-t border-ed-rule/60 pt-2 font-sans-ed text-xs leading-relaxed text-ed-ink-3">
+          {causeInfo.description}
+        </p>
+      )}
     </div>
   );
 };

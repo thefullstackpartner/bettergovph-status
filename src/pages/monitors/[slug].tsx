@@ -157,6 +157,12 @@ const MonitorDetailPage: FC = () => {
               (`403`). It may still be accessible normally in your browser.
             </Notice>
           )}
+          {m.lastError === 'not_found' && (
+            <Notice tone="error" className="mt-4">
+              This URL returned HTTP <code>404</code> (Not Found). The server
+              responded, but the monitored page may have moved or been removed.
+            </Notice>
+          )}
 
           <section className="mt-8">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

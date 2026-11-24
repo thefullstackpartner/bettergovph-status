@@ -42,3 +42,81 @@ export function formatManilaTimestamp(iso: string | null | undefined): string {
     timeZone: 'Asia/Manila',
   }).format(new Date(iso));
 }
+
+export interface IncidentCauseInfo {
+  label: string;
+  description: string;
+}
+
+const INCIDENT_CAUSES: Record<string, IncidentCauseInfo> = {
+  not_found: {
+    label: 'Page Not Found (HTTP 404)',
+    description:
+      'The server responded with HTTP 404; the monitored page may have moved or been removed.',
+  },
+  unexpected_status: {
+    label: 'Unexpected HTTP Error',
+    description:
+      'The server returned an error status code (such as HTTP 5xx or 4xx) instead of a healthy response.',
+  },
+  maintenance: {
+    label: 'Under Maintenance',
+    description:
+      'The portal displayed a maintenance notice and could not be used.',
+  },
+  keyword_missing: {
+    label: 'Expected Content Missing',
+    description:
+      'The page loaded but did not contain the expected portal content, indicating a broken or placeholder page.',
+  },
+  timeout: {
+    label: 'Request Timed Out',
+    description:
+      'The server did not respond within the check timeout window.',
+  },
+  dns: {
+    label: 'DNS Resolution Failed',
+    description: 'The domain name could not be resolved to an IP address.',
+  },
+  tls: {
+    label: 'TLS / SSL Error',
+    description:
+      'A secure HTTPS connection could not be established due to a TLS handshake or certificate error.',
+  },
+  connect: {
+    label: 'Connection Failed',
+    description:
+      'The monitoring probe could not establish a network connection to the server.',
+  },
+  invalid_http_header: {
+    label: 'Malformed HTTP Response',
+    description:
+      'The server returned invalid HTTP headers that could not be parsed.',
+  },
+  waf_403: {
+    label: 'Probe Blocked (WAF 403)',
+    description: 'The portal’s firewall blocked automated monitoring probes.',
+  },
+  down: {
+    label: 'Service Unreachable',
+    description: 'The service failed consecutive health checks.',
+  },
+};
+
+export function formatIncidentCause(cause: string): IncidentCauseInfo {
+  const known = INCIDENT_CAUSES[cause];
+  if (known) return known;
+
+  const httpMatch = cause.match(/^http_(\d{3})$/);
+  if (httpMatch) {
+    return {
+      label: `HTTP ${httpMatch[1]}`,
+      description: `The server returned HTTP ${httpMatch[1]} instead of a healthy response.`,
+    };
+  }
+
+  return {
+    label: cause,
+    description: 'The service failed consecutive health checks.',
+  };
+}

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { OverallBanner, StatusPill, UptimeBars } from '../index';
+import { IncidentCard, OverallBanner, StatusPill, UptimeBars } from '../index';
 import type { SummaryResponse } from '../../../types';
 
 const baseSummary: SummaryResponse = {
@@ -175,6 +176,11 @@ describe('status UI components', () => {
     rerender(<StatusPill status="down" error="maintenance" />);
     expect(screen.getByText('Under Maintenance')).toBeInTheDocument();
 
+    rerender(<StatusPill status="down" error="not_found" />);
+    const notFoundLabel = screen.getByText('Not Found (404)');
+    expect(notFoundLabel).toBeInTheDocument();
+    expect(notFoundLabel.parentElement?.getAttribute('title')).toContain('404');
+
     rerender(<StatusPill status="degraded" />);
     expect(screen.getByText('Degraded')).toBeInTheDocument();
   });
@@ -201,5 +207,28 @@ describe('status UI components', () => {
     const items = screen.getAllByRole('listitem');
     expect(items[2].className).toContain('bg-indigo-500');
     expect(items[2].getAttribute('aria-label')).toContain('probe blocked');
+  });
+
+  it('renders human-readable cause label and explanation in IncidentCard', () => {
+    render(
+      <MemoryRouter>
+        <IncidentCard
+          incident={{
+            id: 1,
+            monitor_slug: 'test-portal',
+            monitor_name: 'Test Portal',
+            agency: 'Test Agency',
+            started_at: '2026-11-24T10:00:00Z',
+            resolved_at: null,
+            cause: 'not_found',
+          }}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Cause: Page Not Found (HTTP 404)')).toBeInTheDocument();
+    expect(
+      screen.getByText(/monitored page may have moved or been removed/i)
+    ).toBeInTheDocument();
   });
 });

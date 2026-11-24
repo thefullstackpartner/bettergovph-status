@@ -48,7 +48,9 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
               ? 'WAF 403'
               : monitor.lastError === 'maintenance'
                 ? 'Maintenance'
-                : `24h: ${formatUptime(monitor.uptime24h)}`}
+                : monitor.lastError === 'not_found'
+                  ? 'HTTP 404'
+                  : `24h: ${formatUptime(monitor.uptime24h)}`}
           </div>
         </div>
         <StatusPill status={monitor.status} error={monitor.lastError} />

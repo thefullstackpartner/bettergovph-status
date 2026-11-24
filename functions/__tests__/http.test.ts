@@ -45,6 +45,19 @@ describe('httpCheck', () => {
     expect(res.error).toBe('unexpected_status');
   });
 
+  it('returns down with not_found error for 404 status', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('not found', { status: 404 })
+    );
+    const res = await httpCheck(baseMonitor, {
+      userAgent: 'test-agent',
+      colo: 'HKG',
+    });
+    expect(res.status).toBe('down');
+    expect(res.http_status).toBe(404);
+    expect(res.error).toBe('not_found');
+  });
+
   it('classifies timeout errors', async () => {
     const err = new Error('The operation timed out');
     err.name = 'TimeoutError';

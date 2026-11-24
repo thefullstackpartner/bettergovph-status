@@ -43,13 +43,20 @@ const WAF_STYLE = {
 const StatusPill: FC<Props> = ({ status, error, className }) => {
   const isWaf = status === 'degraded' && error === 'waf_403';
   const isMaintenance = status === 'down' && error === 'maintenance';
+  const isNotFound = status === 'down' && error === 'not_found';
   const cfg = isWaf ? WAF_STYLE : STYLES[status];
-  const label = isMaintenance ? 'Under Maintenance' : cfg.label;
+  const label = isMaintenance
+    ? 'Under Maintenance'
+    : isNotFound
+      ? 'Not Found (404)'
+      : cfg.label;
   const title = isWaf
     ? 'This portal’s firewall blocked automated monitoring; it may still be accessible in your browser.'
     : isMaintenance
       ? 'This portal is displaying a maintenance page and cannot currently be used.'
-      : undefined;
+      : isNotFound
+        ? 'This URL returned HTTP 404 (Not Found); the page may have moved or been removed.'
+        : undefined;
 
   return (
     <span

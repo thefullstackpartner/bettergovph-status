@@ -19,9 +19,25 @@ Goals:
 - Tiered check intervals: **5 minutes** for critical citizen portals, **15 minutes** for standard agency websites
 - Uptime Kuma-style 24-hour / 45-day / 90-day uptime bars with color-coded status legend (Operational, Degraded / partial outage, Probe Blocked (WAF), Down / Under Maintenance, No data) and response-time charts (`24h`, `7d`, `30d`, `90d`)
 - Clickable overall status filters on the homepage and dedicated `/about` methodology & agency allowlisting documentation
-- 2-strike incident detection (opens on 2 consecutive `down` checks, resolves on 2 consecutive non-down checks)
+- 2-strike incident detection (opens on 2 consecutive `down` checks, resolves on 2 consecutive non-down checks) with human-readable cause explanations
 - Data-as-code monitor definitions validated by JSON Schema
 - Hono-powered Cloudflare Worker API with edge-cached responses (`Cache-Control: s-maxage=60`) to absorb public traffic
+
+### Incident causes
+
+When a monitor fails two consecutive checks, an incident is recorded with one of the following causes (displayed with plain-English explanations in the UI):
+
+| Code | Display Label | Explanation |
+| --- | --- | --- |
+| `not_found` | Page Not Found (HTTP 404) | Server responded with HTTP `404`; the monitored page may have moved or been removed. |
+| `unexpected_status` / `http_<code>` | Unexpected HTTP Error | Server returned another failing HTTP status code (e.g., `5xx` or `4xx`). |
+| `maintenance` | Under Maintenance | HTML response matched a maintenance notice. |
+| `keyword_missing` | Expected Content Missing | Page loaded but did not contain the configured `expectedKeyword`. |
+| `timeout` | Request Timed Out | Server did not respond within the check timeout window (15s default). |
+| `dns` | DNS Resolution Failed | Domain name could not be resolved to an IP address. |
+| `tls` | TLS / SSL Error | HTTPS connection failed due to a TLS handshake or certificate error. |
+| `connect` | Connection Failed | Probe could not establish a network connection to the server. |
+| `invalid_http_header` | Malformed HTTP Response | Server returned invalid HTTP headers and the socket `HEAD` fallback could not read a status line. |
 
 ## How to Run
 

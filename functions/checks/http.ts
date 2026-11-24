@@ -14,6 +14,10 @@ const DEFAULT_MAINTENANCE_PHRASES = [
 
 const MAX_SNIPPET_BYTES = 16_384;
 
+function classifyHttpFailure(status: number): string {
+  return status === 404 ? 'not_found' : 'unexpected_status';
+}
+
 export function classifyFetchError(err: unknown): string {
   if (err instanceof Error) {
     if (err.name === 'TimeoutError' || err.name === 'AbortError') {
@@ -153,7 +157,7 @@ export const httpCheck: CheckRunner = async (monitor, ctx) => {
         status: !ok ? 'down' : responseMs > degradedMs ? 'degraded' : 'up',
         http_status: res.status,
         response_ms: responseMs,
-        error: ok ? null : 'unexpected_status',
+        error: ok ? null : classifyHttpFailure(res.status),
         colo,
       };
     }
@@ -180,7 +184,7 @@ export const httpCheck: CheckRunner = async (monitor, ctx) => {
         status: 'down',
         http_status: res.status,
         response_ms: responseMs,
-        error: 'unexpected_status',
+        error: classifyHttpFailure(res.status),
         colo,
       };
     }
@@ -253,7 +257,11 @@ export const httpCheck: CheckRunner = async (monitor, ctx) => {
           http_status: rawStatus,
           response_ms: responseMs,
           error:
-            rawStatus === 403 ? 'waf_403' : ok ? null : 'unexpected_status',
+            rawStatus === 403
+              ? 'waf_403'
+              : ok
+                ? null
+                : classifyHttpFailure(rawStatus),
           colo: ctx.colo,
         };
       }

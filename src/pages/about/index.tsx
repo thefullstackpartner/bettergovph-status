@@ -65,7 +65,9 @@ const AboutPage: FC = () => {
             <li>
               <strong>Down:</strong> Timeout (15 s), DNS/TLS/connection failure,
               missing expected keyword, HTTP 4xx/5xx status (other than WAF{' '}
-              <code>403</code>), or an HTML page displaying a maintenance notice
+              <code>403</code>; HTTP <code>404</code> is shown as{' '}
+              <strong>Not Found (404)</strong>), or an HTML page displaying a
+              maintenance notice
               (shown as <strong>Under Maintenance</strong>, e.g., &ldquo;under
               maintenance&rdquo;, &ldquo;scheduled maintenance&rdquo;) since
               citizens cannot transact.
@@ -141,6 +143,62 @@ const AboutPage: FC = () => {
                 <strong>Gray (No data):</strong> No checks were recorded during
                 that window.
               </span>
+            </li>
+          </ul>
+        </Card>
+      </section>
+
+      <section className="mb-10">
+        <SectionHeader label="Incident Causes" />
+        <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
+          <p>
+            When a portal fails two consecutive checks, an incident is opened
+            with one of the following causes:
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong>Page Not Found (HTTP 404)</strong> (<code>not_found</code>
+              ): The server responded with HTTP <code>404</code>; the monitored
+              page may have moved or been removed.
+            </li>
+            <li>
+              <strong>Unexpected HTTP Error</strong> (
+              <code>unexpected_status</code> / <code>http_&lt;code&gt;</code>):
+              The server returned another failing status code (such as HTTP 5xx
+              or 4xx) instead of a healthy response.
+            </li>
+            <li>
+              <strong>Under Maintenance</strong> (<code>maintenance</code>): The
+              portal displayed a maintenance notice and could not be used.
+            </li>
+            <li>
+              <strong>Expected Content Missing</strong> (
+              <code>keyword_missing</code>): The page loaded but did not contain
+              the expected portal content, indicating a broken or placeholder
+              page.
+            </li>
+            <li>
+              <strong>Request Timed Out</strong> (<code>timeout</code>): The
+              server did not respond within the 15-second check timeout window.
+            </li>
+            <li>
+              <strong>DNS Resolution Failed</strong> (<code>dns</code>): The
+              domain name could not be resolved to an IP address.
+            </li>
+            <li>
+              <strong>TLS / SSL Error</strong> (<code>tls</code>): A secure
+              HTTPS connection could not be established due to a TLS handshake
+              or certificate error.
+            </li>
+            <li>
+              <strong>Connection Failed</strong> (<code>connect</code>): The
+              monitoring probe could not establish a network connection to the
+              server.
+            </li>
+            <li>
+              <strong>Malformed HTTP Response</strong> (
+              <code>invalid_http_header</code>): The server returned invalid
+              HTTP headers that could not be parsed.
             </li>
           </ul>
         </Card>
