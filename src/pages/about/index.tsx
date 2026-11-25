@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { GradeBadge } from '../../components/status';
 import {
   Card,
   Container,
@@ -32,6 +33,11 @@ const AGENT_LINKS = [
     href: '/incidents.rss',
     description:
       'RSS 2.0 feed of outage incidents (?status=open for ongoing only); per-monitor feeds at /api/monitors/{slug}/feed.xml.',
+  },
+  {
+    href: '/api/scorecards?period=30d',
+    description:
+      'Agency & portal reliability scorecards with grades, incident counts, and MTTR (supports format=json or format=csv).',
   },
 ];
 
@@ -345,6 +351,50 @@ const AboutPage: FC = () => {
             </a>
             ). The API is rate-limited to 120 requests per minute per IP.
           </p>
+        </Card>
+      </section>
+
+      <section id="reliability-scorecards">
+        <SectionHeader label="Reliability Scorecards & Grading" />
+        <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
+          <p>
+            The{' '}
+            <a
+              href="/scorecards"
+              className="font-medium text-ed-navy underline underline-offset-2 hover:text-ed-navy-ink"
+            >
+              Reliability Scorecards
+            </a>{' '}
+            page summarizes portal and category performance over 7-day, 30-day,
+            90-day, and 1-year windows, including{' '}
+            <strong>Mean Time to Recovery (MTTR)</strong> for resolved incidents
+            and one-click CSV/JSON exports.
+          </p>
+          <p>
+            Letter grades are computed from a{' '}
+            <strong>0–100 composite reliability score</strong> combining{' '}
+            <strong>70% availability</strong> (non-down checks),{' '}
+            <strong>15% clean uptime</strong> (fast, non-WAF-blocked checks),
+            and <strong>15% latency</strong> (full points &le; 500 ms, scaling
+            down as response times approach 3 s+):
+          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+            <span className="inline-flex items-center gap-1.5">
+              <GradeBadge grade="A" /> <span>&ge; 95</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <GradeBadge grade="B" /> <span>&ge; 90</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <GradeBadge grade="C" /> <span>&ge; 80</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <GradeBadge grade="D" /> <span>&ge; 70</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <GradeBadge grade="F" /> <span>&lt; 70</span>
+            </span>
+          </div>
         </Card>
       </section>
 

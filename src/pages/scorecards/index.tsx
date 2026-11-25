@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DownloadIcon, ExternalLinkIcon, SearchIcon } from 'lucide-react';
+import { GradeBadge } from '../../components/status';
 import {
   Button,
   Container,
@@ -11,11 +12,9 @@ import {
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { getScorecards } from '../../lib/api';
 import { formatMs } from '../../lib/format';
-import { cn } from '../../lib/utils';
 import type {
   DashboardRange,
   DashboardTierFilter,
-  ScorecardGrade,
   ScorecardsResponse,
 } from '../../types';
 
@@ -32,15 +31,6 @@ const TIERS: Array<{ value: DashboardTierFilter; label: string }> = [
   { value: 'standard', label: 'Standard' },
 ];
 
-const GRADE_STYLE: Record<ScorecardGrade, string> = {
-  A: 'border-success-500/40 bg-success-50 text-success-700',
-  B: 'border-emerald-400/50 bg-emerald-50 text-emerald-800',
-  C: 'border-warning-500/40 bg-warning-50 text-warning-700',
-  D: 'border-orange-400/50 bg-orange-50 text-orange-800',
-  F: 'border-ed-red/40 bg-red-50 text-ed-red-ink',
-  'N/A': 'border-ed-rule bg-ed-paper-2 text-ed-ink-4',
-};
-
 function formatMttr(sec: number | null): string {
   if (sec === null) return '—';
   if (sec < 60) return `${sec}s`;
@@ -54,17 +44,6 @@ function formatMttr(sec: number | null): string {
 function formatPct(value: number | null): string {
   return value === null ? '—' : `${value.toFixed(2)}%`;
 }
-
-const GradeBadge: FC<{ grade: ScorecardGrade }> = ({ grade }) => (
-  <span
-    className={cn(
-      'inline-flex min-w-[28px] items-center justify-center border px-1.5 py-0.5 font-mono-ed text-xs font-bold',
-      GRADE_STYLE[grade]
-    )}
-  >
-    {grade}
-  </span>
-);
 
 const ScorecardsPage: FC = () => {
   useDocumentTitle('Reliability Scorecards | BetterGovPH Status');
@@ -147,7 +126,14 @@ const ScorecardsPage: FC = () => {
           </h1>
           <p className="mt-1 max-w-2xl font-sans-ed text-sm text-ed-ink-3">
             Availability grades, incident counts, and Mean Time to Recovery
-            (MTTR) across monitored Philippine government portals.
+            (MTTR) across monitored Philippine government portals.{' '}
+            <Link
+              to="/about#reliability-scorecards"
+              className="text-ed-navy hover:underline"
+            >
+              How grades are calculated
+            </Link>
+            .
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -237,7 +223,7 @@ const ScorecardsPage: FC = () => {
                           </Link>
                         </td>
                         <td className="px-4 py-3">
-                          <GradeBadge grade={c.grade} />
+                          <GradeBadge grade={c.grade} score={c.score} />
                         </td>
                         <td className="px-4 py-3 font-mono-ed text-xs">
                           {c.monitorCount}
@@ -342,7 +328,7 @@ const ScorecardsPage: FC = () => {
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <GradeBadge grade={m.grade} />
+                          <GradeBadge grade={m.grade} score={m.score} />
                         </td>
                         <td className="px-4 py-3 font-mono-ed text-xs">
                           {formatPct(m.availabilityPct)}

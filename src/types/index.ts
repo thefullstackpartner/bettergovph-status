@@ -177,6 +177,7 @@ export interface ScorecardMonitorRow {
   incidentCount: number;
   openIncidents: number;
   mttrSec: number | null;
+  score: number | null;
   grade: ScorecardGrade;
 }
 
@@ -189,6 +190,7 @@ export interface ScorecardCategoryRow {
   avgMs: number | null;
   incidentCount: number;
   mttrSec: number | null;
+  score: number | null;
   grade: ScorecardGrade;
 }
 

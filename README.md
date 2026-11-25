@@ -19,7 +19,7 @@ Goals:
 - Tiered check intervals: **5 minutes** for curated **Critical** citizen portals (`src/data/monitors/curated.json`), **15 minutes** for standard agency websites (`src/data/monitors/imported/*.json`), **6 hours** (`0 */6 * * *`) for **Content Freshness** probes on enabled portals, plus a daily cleanup cron at `16:15 UTC` (`00:15 Asia/Manila`)
 - Content Freshness & Update Frequency monitoring via an OOP `FreshnessProbe` registry (`functions/checks/freshness/`) with portal-specific strategies (`dbm-dime`, `dpwh-transparency`, `sumbong-sa-pangulo`) and dynamically calculated staleness (`FRESHNESS_STALE_DAYS`, default `30` days)
 - Uptime Kuma-style 24-hour / 45-day / 90-day uptime bars with color-coded status legend (Operational, Degraded / partial outage, Probe Blocked (WAF), Down / Under Maintenance, No data) and response-time charts (`24h`, `7d`, `30d`, `90d`)
-- Quick **All / Critical / Freshness** toggle, freshness filters & sorting on the homepage, **Content Freshness Watchlist** on `/dashboard`, and dedicated `/about` methodology & agency allowlisting documentation
+- Quick **All / Critical / Freshness** toggle, freshness filters & sorting on the homepage, **Content Freshness Watchlist** on `/dashboard`, **Agency Reliability Scorecards** (`/scorecards` with `A`–`F` grades, MTTR, and CSV/JSON exports), and dedicated `/about` methodology & agency allowlisting documentation
 - 2-strike incident detection (1st failed check immediately marks the portal **Down** with its cause sub-status such as `Down · Timeout`, while an incident opens on 2 consecutive `down` checks and resolves on 2 consecutive non-down checks) with human-readable cause explanations
 - Data-as-code monitor definitions validated by JSON Schema
 - Hono-powered Cloudflare Worker API with edge-cached responses (`Cache-Control: s-maxage=60`) to absorb public traffic
@@ -87,6 +87,7 @@ The status data is public and served in agent-friendly formats. The SPA itself n
 | `/api/monitors/{slug}/feed.xml` | RSS 2.0 XML                             | Per-monitor outage incidents feed                                      |
 | `/api/openapi.json`           | OpenAPI 3.1                               | Machine-readable API contract for tool / function calling              |
 | `/api/monitors?view=lite`     | JSON                                      | Filterable monitor list (`status`, `category`, `tier`, `q`)            |
+| `/api/scorecards?period=30d`  | JSON / CSV                                | Agency & portal reliability grades, MTTR (`format=json\|csv`)          |
 | `/robots.txt`, `/sitemap.xml` | text / XML                                | Crawler policy and page index                                          |
 
 - Public GET endpoints allow CORS from any origin. `POST /api/trigger` stays locked.

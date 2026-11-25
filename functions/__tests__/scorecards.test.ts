@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   buildScorecardsPayload,
+  computeCompositeScore,
   computeReliabilityGrade,
   scorecardsToCsv,
 } from '../api/scorecards';
@@ -19,13 +20,18 @@ const firstSlug = enabledMonitors[0].slug;
 describe('Scorecards & CSV export', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('assigns reliability grades based on availability thresholds', () => {
+  it('assigns reliability grades from composite scores', () => {
     expect(computeReliabilityGrade(null, 0)).toBe('N/A');
-    expect(computeReliabilityGrade(99.9, 100)).toBe('A');
-    expect(computeReliabilityGrade(98.5, 100)).toBe('B');
-    expect(computeReliabilityGrade(96.0, 100)).toBe('C');
-    expect(computeReliabilityGrade(91.0, 100)).toBe('D');
-    expect(computeReliabilityGrade(85.0, 100)).toBe('F');
+    expect(computeReliabilityGrade(96.0, 100)).toBe('A');
+    expect(computeReliabilityGrade(91.0, 100)).toBe('B');
+    expect(computeReliabilityGrade(83.0, 100)).toBe('C');
+    expect(computeReliabilityGrade(72.0, 100)).toBe('D');
+    expect(computeReliabilityGrade(65.0, 100)).toBe('F');
+
+    const fastClean = computeCompositeScore(99.5, 99.0, 250, 100);
+    expect(fastClean).toBe(99.5);
+    const slowDegraded = computeCompositeScore(99.5, 40.0, 3500, 100);
+    expect(slowDegraded).toBeLessThan(85);
   });
 
   it('builds scorecards payload with MTTR and category rollups', () => {
@@ -85,6 +91,7 @@ describe('Scorecards & CSV export', () => {
         incidentCount: 1,
         openIncidents: 0,
         mttrSec: 300,
+        score: 91.0,
         grade: 'B',
       },
     ]);

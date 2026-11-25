@@ -36,15 +36,41 @@ export function parseScorecardTier(raw: string | undefined): ScorecardTier {
   return 'all';
 }
 
-export function computeReliabilityGrade(
+export function computeLatencyScore(avgMs: number | null): number {
+  if (avgMs === null || avgMs <= 500) return 100;
+  if (avgMs <= 3000) {
+    return 100 - ((avgMs - 500) / 2500) * 50;
+  }
+  if (avgMs <= 6000) {
+    return 50 - ((avgMs - 3000) / 3000) * 50;
+  }
+  return 0;
+}
+
+export function computeCompositeScore(
   availabilityPct: number | null,
+  cleanUptimePct: number | null,
+  avgMs: number | null,
+  checksTotal: number
+): number | null {
+  if (checksTotal === 0 || availabilityPct === null || cleanUptimePct === null) {
+    return null;
+  }
+  const latencyScore = computeLatencyScore(avgMs);
+  const raw =
+    0.7 * availabilityPct + 0.15 * cleanUptimePct + 0.15 * latencyScore;
+  return roundPct(Math.max(0, Math.min(100, raw)));
+}
+
+export function computeReliabilityGrade(
+  score: number | null,
   checksTotal: number
 ): ScorecardGrade {
-  if (checksTotal === 0 || availabilityPct === null) return 'N/A';
-  if (availabilityPct >= 99.5) return 'A';
-  if (availabilityPct >= 98.0) return 'B';
-  if (availabilityPct >= 95.0) return 'C';
-  if (availabilityPct >= 90.0) return 'D';
+  if (checksTotal === 0 || score === null) return 'N/A';
+  if (score >= 95) return 'A';
+  if (score >= 90) return 'B';
+  if (score >= 80) return 'C';
+  if (score >= 70) return 'D';
   return 'F';
 }
 
@@ -64,6 +90,7 @@ export interface ScorecardMonitorRow {
   incidentCount: number;
   openIncidents: number;
   mttrSec: number | null;
+  score: number | null;
   grade: ScorecardGrade;
 }
 
@@ -76,6 +103,7 @@ export interface ScorecardCategoryRow {
   avgMs: number | null;
   incidentCount: number;
   mttrSec: number | null;
+  score: number | null;
   grade: ScorecardGrade;
 }
 
@@ -105,6 +133,12 @@ export function buildScorecardsPayload(
     const incidentCount = Number(inc?.incident_count ?? 0);
     const openIncidents = Number(inc?.open_incidents ?? 0);
     const mttrSec = inc?.mttr_sec ?? null;
+    const score = computeCompositeScore(
+      availabilityPct,
+      cleanUptimePct,
+      avgMs,
+      total
+    );
 
     return {
       slug: m.slug,
@@ -122,7 +156,8 @@ export function buildScorecardsPayload(
       incidentCount,
       openIncidents,
       mttrSec,
-      grade: computeReliabilityGrade(availabilityPct, total),
+      score,
+      grade: computeReliabilityGrade(score, total),
     };
   });
 
@@ -132,6 +167,7 @@ export function buildScorecardsPayload(
     {
       monitorCount: number;
       total: number;
+      up: number;
       down: number;
       sumMs: number;
       incidents: number;
@@ -144,6 +180,7 @@ export function buildScorecardsPayload(
     const cur = catAcc.get(row.category) ?? {
       monitorCount: 0,
       total: 0,
+      up: 0,
       down: 0,
       sumMs: 0,
       incidents: 0,
@@ -151,6 +188,7 @@ export function buildScorecardsPayload(
     };
     cur.monitorCount += 1;
     cur.total += Number(st?.total ?? 0);
+    cur.up += Number(st?.up ?? 0);
     cur.down += Number(st?.down ?? 0);
     cur.sumMs += Number(st?.sum_ms ?? 0);
     cur.incidents += row.incidentCount;
@@ -162,6 +200,8 @@ export function buildScorecardsPayload(
     .map(([slug, acc]) => {
       const availabilityPct =
         acc.total > 0 ? roundPct(((acc.total - acc.down) / acc.total) * 100) : null;
+      const cleanUptimePct =
+        acc.total > 0 ? roundPct((acc.up / acc.total) * 100) : null;
       const avgMs = acc.total > 0 ? Math.round(acc.sumMs / acc.total) : null;
       const mttrSec =
         acc.mttrValues.length > 0
@@ -169,6 +209,12 @@ export function buildScorecardsPayload(
               acc.mttrValues.reduce((a, b) => a + b, 0) / acc.mttrValues.length
             )
           : null;
+      const score = computeCompositeScore(
+        availabilityPct,
+        cleanUptimePct,
+        avgMs,
+        acc.total
+      );
       return {
         category: slug,
         categoryName: categoryMap.get(slug)?.name ?? slug,
@@ -178,12 +224,11 @@ export function buildScorecardsPayload(
         avgMs,
         incidentCount: acc.incidents,
         mttrSec,
-        grade: computeReliabilityGrade(availabilityPct, acc.total),
+        score,
+        grade: computeReliabilityGrade(score, acc.total),
       };
     })
-    .sort(
-      (a, b) => (b.availabilityPct ?? -1) - (a.availabilityPct ?? -1)
-    );
+    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
 
   // Overall summary
   let sumTotal = 0;
@@ -236,6 +281,7 @@ export function scorecardsToCsv(
     'agency',
     'category',
     'tier',
+    'score',
     'grade',
     'availability_pct',
     'clean_uptime_pct',
@@ -255,6 +301,7 @@ export function scorecardsToCsv(
         r.agency,
         r.categoryName,
         r.tier,
+        r.score,
         r.grade,
         r.availabilityPct,
         r.cleanUptimePct,
