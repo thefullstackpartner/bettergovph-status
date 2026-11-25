@@ -214,6 +214,35 @@ describe('status UI components', () => {
     expect(items[2].getAttribute('aria-label')).toContain('probe blocked');
   });
 
+  it('shows wrapped time block details without truncation when a bar is clicked', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    render(
+      <UptimeBars
+        granularity="daily"
+        days={3}
+        bars={[
+          {
+            day: today,
+            total: 12,
+            up: 12,
+            degraded: 0,
+            down: 0,
+            avgMs: 240,
+          },
+        ]}
+      />
+    );
+
+    const items = screen.getAllByRole('listitem');
+    fireEvent.click(items[2]);
+
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent('100% up (12 checks, avg 240 ms)');
+    const labelSpan = status.querySelector('span');
+    expect(labelSpan?.className).not.toContain('truncate');
+    expect(labelSpan?.className).toContain('break-words');
+  });
+
   it('renders human-readable cause label and explanation in IncidentCard', () => {
     render(
       <MemoryRouter>

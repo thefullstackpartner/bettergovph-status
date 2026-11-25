@@ -187,15 +187,15 @@ const UptimeBars: FC<Props> = ({
       {activeSlot && (
         <div
           role="status"
-          className="mt-1.5 flex items-center justify-between gap-2 border border-ed-rule bg-ed-paper-2 px-2.5 py-1 font-mono-ed text-[11px] text-ed-ink"
+          className="mt-1.5 flex items-start justify-between gap-2 border border-ed-rule bg-ed-paper-2 px-2.5 py-1.5 font-mono-ed text-[11px] leading-snug text-ed-ink"
         >
-          <span className="truncate">{activeSlot.label}</span>
+          <span className="min-w-0 break-words">{activeSlot.label}</span>
           {selectedKey && (
             <button
               type="button"
               aria-label="Clear selected time block"
               onClick={() => setSelectedKey(null)}
-              className="shrink-0 cursor-pointer text-ed-ink-4 hover:text-ed-ink"
+              className="mt-0.5 shrink-0 cursor-pointer text-ed-ink-4 hover:text-ed-ink"
             >
               <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
