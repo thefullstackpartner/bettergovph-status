@@ -41,7 +41,10 @@ const ResponseTimeChart: FC<Props> = ({ range, points, daily }) => {
   return (
     <div className="h-64 w-full border border-ed-rule bg-white p-4">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData}>
+        <AreaChart
+          data={chartData}
+          margin={{ top: 16, right: 12, bottom: 4, left: 8 }}
+        >
           <CartesianGrid stroke="#dbe3ef" strokeDasharray="3 3" />
           <XAxis
             dataKey="label"
@@ -54,7 +57,7 @@ const ResponseTimeChart: FC<Props> = ({ range, points, daily }) => {
             ticks={[0, 3000, 6000, 9000, 12000, 15000]}
             allowDataOverflow
             tick={{ fontSize: 11, fill: '#252629' }}
-            width={72}
+            width={76}
           />
           <Tooltip
             formatter={(val: number) => [`${val} ms`, 'Response time']}
