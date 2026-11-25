@@ -5,6 +5,7 @@ import {
   parseDashboardTier,
 } from '../api/dashboard';
 import { app } from '../index';
+import { allMonitors } from '../lib/monitors';
 import * as supabaseLib from '../lib/supabase';
 import type { DashboardDbPayload } from '../lib/supabase';
 import type { Env } from '../types';
@@ -113,9 +114,12 @@ describe('dashboard API & aggregation', () => {
     expect(spy).toHaveBeenCalledWith(mockEnv, 365);
 
     const body = (await res.json()) as ReturnType<typeof buildDashboardPayload>;
+    const expectedCriticalCount = allMonitors.filter(
+      m => m.tier === 'critical' && m.enabled
+    ).length;
     expect(body.range).toBe('1y');
     expect(body.tier).toBe('critical');
-    expect(body.kpis.totalMonitors).toBe(31);
+    expect(body.kpis.totalMonitors).toBe(expectedCriticalCount);
 
     spy.mockRestore();
   });

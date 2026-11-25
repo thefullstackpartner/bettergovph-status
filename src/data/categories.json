@@ -45,6 +45,11 @@
     "description": "DepEd, CHED, and Civil Service Commission portals."
   },
   {
+    "slug": "infrastructure",
+    "name": "Infrastructure & Transparency",
+    "description": "Public works, infrastructure monitoring, and citizen reporting portals."
+  },
+  {
     "slug": "government-portals",
     "name": "National Portals",
     "description": "eGovPH, GOV.PH, Official Gazette, and COMELEC."

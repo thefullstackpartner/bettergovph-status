@@ -11,6 +11,7 @@ import {
 import { MonitorRow, OverallBanner } from '../components/status';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useSummary } from '../hooks/useSummary';
+import { SUGGEST_PORTAL_URL } from '../lib/links';
 
 const PAGE_SIZE = 25;
 
@@ -272,7 +273,18 @@ const Home: FC = () => {
 
             {pagedMonitors.length === 0 ? (
               <div className="border border-ed-rule bg-ed-paper-2 p-8 text-center font-sans-ed text-sm text-ed-ink-3">
-                No portals match your current filters.
+                <p>No portals match your current filters.</p>
+                <p className="mt-2">
+                  Missing a critical government portal?{' '}
+                  <a
+                    href={SUGGEST_PORTAL_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-ed-navy underline underline-offset-2 hover:text-ed-navy-ink"
+                  >
+                    Suggest one on GitHub ↗
+                  </a>
+                </p>
               </div>
             ) : (
               <div className="space-y-3">

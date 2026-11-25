@@ -432,5 +432,47 @@
     "degradedMs": 3000,
     "source": "curated",
     "enabled": true
+  },
+  {
+    "slug": "sumbong-sa-pangulo",
+    "name": "Sumbong sa Pangulo",
+    "agency": "Office of the President",
+    "department": "Office of the President",
+    "category": "infrastructure",
+    "type": "http",
+    "url": "https://sumbongsapangulo.ph/",
+    "tier": "critical",
+    "method": "GET",
+    "degradedMs": 3000,
+    "source": "curated",
+    "enabled": true
+  },
+  {
+    "slug": "dpwh-transparency",
+    "name": "DPWH Transparency Portal",
+    "agency": "Department of Public Works and Highways",
+    "department": "Department of Public Works and Highways",
+    "category": "infrastructure",
+    "type": "http",
+    "url": "https://transparency.dpwh.gov.ph/",
+    "tier": "critical",
+    "method": "GET",
+    "degradedMs": 3000,
+    "source": "curated",
+    "enabled": true
+  },
+  {
+    "slug": "dbm-dime",
+    "name": "Project DIME (Digital Information for Monitoring and Evaluation)",
+    "agency": "Department of Budget and Management",
+    "department": "Department of Budget and Management",
+    "category": "infrastructure",
+    "type": "http",
+    "url": "https://www.dime.gov.ph/",
+    "tier": "critical",
+    "method": "GET",
+    "degradedMs": 3000,
+    "source": "curated",
+    "enabled": true
   }
 ]

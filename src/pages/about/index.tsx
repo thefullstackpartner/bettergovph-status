@@ -7,6 +7,7 @@ import {
   SectionHeader,
 } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { SUGGEST_PORTAL_URL } from '../../lib/links';
 
 const AboutPage: FC = () => {
   useDocumentTitle('About & Methodology | BetterGovPH Status');
@@ -45,9 +46,9 @@ const AboutPage: FC = () => {
         <Card className="space-y-4 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <ul className="list-disc space-y-2 pl-5">
             <li>
-              <strong>Critical portals (5-minute interval):</strong> The 31
-              curated, high-traffic citizen services (such as BIR, SSS,
-              PhilHealth, Pag-IBIG, PSA, DFA, LTO, and eGovPH), badged{' '}
+              <strong>Critical portals (5-minute interval):</strong> Curated,
+              high-traffic citizen services (such as BIR, SSS, PhilHealth,
+              Pag-IBIG, PSA, DFA, LTO, and eGovPH), badged{' '}
               <strong>Critical</strong> across the dashboard.
             </li>
             <li>
@@ -246,6 +247,29 @@ const AboutPage: FC = () => {
             <strong>Probe Blocked (WAF)</strong>. If you manage a government
             portal and need us to adjust a check endpoint, expected status
             codes, or opt out, please open an issue in the GitHub repository.
+          </p>
+        </Card>
+      </section>
+
+      <section>
+        <SectionHeader label="Suggest a Missing Portal" />
+        <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
+          <p>
+            Our monitor directory is community-maintained and may not yet
+            include every newly launched government initiative, microsite, or
+            citizen-facing sub-portal.
+          </p>
+          <p>
+            If a critical Philippine government portal is missing,{' '}
+            <a
+              href={SUGGEST_PORTAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-ed-navy underline underline-offset-2 hover:text-ed-navy-ink"
+            >
+              suggest a portal on GitHub ↗
+            </a>{' '}
+            with its URL, agency, and why it matters for citizens.
           </p>
         </Card>
       </section>

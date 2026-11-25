@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
 import versionData from '../../version.json';
+import { SUGGEST_PORTAL_URL } from '../../lib/links';
 import { Container } from '../ui';
 
 const Footer: FC = () => {
@@ -51,6 +52,16 @@ const Footer: FC = () => {
                 >
                   Methodology &amp; Opt-out
                 </Link>
+              </li>
+              <li>
+                <a
+                  href={SUGGEST_PORTAL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ed-navy no-underline hover:underline"
+                >
+                  Suggest a Missing Portal ↗
+                </a>
               </li>
             </ul>
           </div>

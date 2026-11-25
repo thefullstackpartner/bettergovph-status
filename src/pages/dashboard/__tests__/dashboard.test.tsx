@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { getMockDashboardData } from '../../../data/mockDashboard';
+import curatedMonitors from '../../../data/monitors/curated.json';
 import * as api from '../../../lib/api';
 import DashboardPage from '../index';
 
@@ -57,10 +58,13 @@ describe('DashboardPage', () => {
       expect(screen.getByText(/365-day window/i)).toBeInTheDocument();
     });
 
+    const criticalCount = curatedMonitors.filter(m => m.enabled).length;
     const tierSelect = screen.getByLabelText(/filter by monitor tier/i);
     fireEvent.change(tierSelect, { target: { value: 'critical' } });
     await waitFor(() => {
-      expect(screen.getAllByText(/31 portals/i).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(new RegExp(`${criticalCount} portals`, 'i')).length
+      ).toBeGreaterThan(0);
     });
   });
 
