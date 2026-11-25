@@ -29,9 +29,13 @@ import {
   formatUptime,
 } from '../../lib/format';
 import { cn } from '../../lib/utils';
-import type { MonitorDetailResponse } from '../../types';
+import categoriesData from '../../data/categories.json';
+import type { Category, MonitorDetailResponse } from '../../types';
 
 const RANGES: Array<'24h' | '7d' | '30d' | '90d'> = ['24h', '7d', '30d', '90d'];
+const CATEGORIES_BY_SLUG = new Map(
+  (categoriesData as Category[]).map(c => [c.slug, c])
+);
 
 const MonitorDetailPage: FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -78,6 +82,8 @@ const MonitorDetailPage: FC = () => {
   }, [slug]);
 
   const m = detail?.monitor;
+  const categoryInfo = m ? CATEGORIES_BY_SLUG.get(m.category) : undefined;
+  const categoryLabel = categoryInfo?.name ?? m?.category;
 
   return (
     <Container narrow className="py-8">
@@ -104,6 +110,15 @@ const MonitorDetailPage: FC = () => {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Eyebrow tone="onDark">{m.agency}</Eyebrow>
+                  {m.category && (
+                    <Link
+                      to={`/?category=${encodeURIComponent(m.category)}`}
+                      title={categoryInfo?.description}
+                      className="border border-white/30 bg-white/10 px-1.5 py-0.5 font-mono-ed text-[10px] font-semibold uppercase tracking-[0.06em] text-white no-underline transition-colors hover:bg-white/20"
+                    >
+                      {categoryLabel}
+                    </Link>
+                  )}
                   {m.tier === 'critical' && (
                     <span
                       title="Curated critical citizen portal — checked every 5 minutes"
