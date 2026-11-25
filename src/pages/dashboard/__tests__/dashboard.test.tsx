@@ -84,4 +84,29 @@ describe('DashboardPage', () => {
     fireEvent.change(searchInput, { target: { value: 'PAGASA' } });
     expect(screen.getAllByText(/PAGASA/i).length).toBeGreaterThan(0);
   });
+
+  it('filters the monitor leaderboard when clicking a category row', async () => {
+    render(
+      <MemoryRouter>
+        <DashboardPage />
+      </MemoryRouter>
+    );
+
+    await screen.findByText(/category performance/i);
+
+    const categorySection = screen.getByRole('region', {
+      name: /category performance comparison/i,
+    });
+    const firstRow = categorySection.querySelector('tbody tr');
+    expect(firstRow).not.toBeNull();
+    fireEvent.click(firstRow!);
+
+    const categorySelect = screen.getByLabelText(
+      /filter leaderboard by category/i
+    ) as HTMLSelectElement;
+    expect(categorySelect.value).not.toBe('all');
+    expect(
+      screen.getByRole('button', { name: /clear category filter/i })
+    ).toBeInTheDocument();
+  });
 });

@@ -72,7 +72,7 @@ const CategoryLeaderboard: FC<Props> = ({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <SectionHeader
           label="Category Performance"
-          meta={`${categories.length} categories · click a row to filter monitors`}
+          meta={`${categories.length} categories · click a row or bar to filter monitors`}
           className="mb-0"
         />
         {selectedCategory !== 'all' && (
@@ -125,10 +125,29 @@ const CategoryLeaderboard: FC<Props> = ({
                     payload?.[0]?.payload?.fullName ?? ''
                   }
                 />
-                <Bar dataKey="availabilityPct" radius={0}>
+                <Bar
+                  dataKey="availabilityPct"
+                  radius={0}
+                  className="cursor-pointer"
+                  onClick={(_data, index) => {
+                    const item = chartData[index];
+                    if (item) {
+                      onSelectCategory(
+                        selectedCategory === item.slug ? 'all' : item.slug
+                      );
+                    }
+                  }}
+                >
                   {chartData.map((entry, idx) => (
                     <Cell
                       key={entry.slug}
+                      className="cursor-pointer"
+                      fillOpacity={
+                        selectedCategory === 'all' ||
+                        selectedCategory === entry.slug
+                          ? 1
+                          : 0.35
+                      }
                       fill={
                         idx === 0
                           ? '#c8102e'

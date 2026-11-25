@@ -36,6 +36,15 @@ const DashboardPage: FC = () => {
   const { data, loading, error } = useDashboard(range, tier);
   const { data: summary } = useSummary();
 
+  const handleSelectCategory = (slug: string) => {
+    setSelectedCategory(slug);
+    if (slug !== 'all') {
+      document
+        .getElementById('monitor-leaderboard')
+        ?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <Container className="py-8">
       <header className="mb-6 border border-[#002b82] bg-[#0038a8] p-6 text-white">
@@ -115,12 +124,7 @@ const DashboardPage: FC = () => {
           <DashboardKpiStrip
             kpis={data.kpis}
             days={data.days}
-            onSelectCategory={slug => {
-              setSelectedCategory(slug);
-              document
-                .getElementById('monitor-leaderboard')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
+            onSelectCategory={handleSelectCategory}
           />
 
           <DashboardTrendCharts dailyTrend={data.dailyTrend} days={data.days} />
@@ -128,7 +132,7 @@ const DashboardPage: FC = () => {
           <CategoryLeaderboard
             categories={data.categories}
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={handleSelectCategory}
           />
 
           <MonitorLeaderboard
