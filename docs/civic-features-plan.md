@@ -21,12 +21,12 @@ Enable citizens, journalists, and agency IT teams to subscribe to outages withou
 ### 1.2 Planned Maintenance Windows (Data-as-Code)
 Distinguish scheduled agency maintenance from unplanned outages so SLA metrics stay accurate.
 
-- [ ] Create `src/data/schema/maintenance.schema.json` and `src/data/maintenance.json` for declaring scheduled maintenance windows (`slug`, `title`, `startAt`, `endAt`, `impact`, optional `sourceUrl`)
-- [ ] Update `npm run validate:data` script to validate `src/data/maintenance.json` against its JSON Schema
-- [ ] Update `functions/lib/snapshot.ts` and `functions/lib/scheduler.ts` so checks during an active maintenance window report `maintenance_scheduled` (and avoid opening unplanned outage incidents)
-- [ ] Display an active/upcoming **Scheduled Maintenance** banner and badge in the SPA (`Home`, `MonitorDetail`, `Incidents`)
-- [ ] Document maintenance PR format in `src/data/monitors/README.md`
-- [ ] Add unit tests covering active, upcoming, and expired maintenance windows
+- [x] Create `src/data/schema/maintenance.schema.json` and `src/data/maintenance.json` for declaring scheduled maintenance windows (`slug`, `title`, `startAt`, `endAt`, `impact`, optional `sourceUrl`)
+- [x] Update `npm run validate:data` script to validate `src/data/maintenance.json` against its JSON Schema
+- [x] Update `functions/lib/snapshot.ts` and `functions/lib/scheduler.ts` so checks during an active maintenance window report `maintenance_scheduled` (and avoid opening unplanned outage incidents)
+- [x] Display an active/upcoming **Scheduled Maintenance** banner and badge in the SPA (`Home`, `MonitorDetail`, `Incidents`)
+- [x] Document maintenance PR format in `src/data/monitors/README.md`
+- [x] Add unit tests covering active, upcoming, and expired maintenance windows
 
 ### 1.3 Agency Reliability Scorecards & CSV/JSON Exports
 Turn existing 365-day `bgovph_daily_stats` data into actionable public accountability reports.

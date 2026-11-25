@@ -50,6 +50,7 @@ const CAUSE_LABELS: Record<string, string> = {
   not_found: 'Page not found (HTTP 404)',
   unexpected_status: 'Unexpected HTTP error',
   maintenance: 'Under maintenance',
+  maintenance_scheduled: 'Scheduled maintenance',
   keyword_missing: 'Expected content missing',
   timeout: 'Request timed out',
   dns: 'DNS resolution failed',
@@ -78,6 +79,8 @@ export function statusLabel(
 ): string {
   if (status === 'degraded' && error === 'waf_403')
     return 'Probe blocked (WAF)';
+  if (status === 'degraded' && error === 'maintenance_scheduled')
+    return 'Scheduled maintenance';
   switch (status) {
     case 'up':
       return 'Operational';

@@ -13,6 +13,7 @@ import {
 import {
   FreshnessPill,
   IncidentCard,
+  MaintenanceBanner,
   ResponseTimeChart,
   StatusPill,
   UptimeBars,
@@ -152,7 +153,11 @@ const MonitorDetailPage: FC = () => {
                   <RssIcon size={12} />
                   <span>RSS</span>
                 </a>
-                <StatusPill status={m.status} error={m.lastError} />
+                <StatusPill
+                  status={m.status}
+                  error={m.lastError}
+                  maintenance={m.maintenance}
+                />
               </div>
             </div>
 
@@ -203,6 +208,43 @@ const MonitorDetailPage: FC = () => {
               </div>
             </div>
           </div>
+
+          {m.maintenance && (
+            <MaintenanceBanner
+              maintenances={{
+                active:
+                  m.maintenance.status === 'active'
+                    ? [
+                        {
+                          id: m.maintenance.id,
+                          slugs: [m.slug],
+                          title: m.maintenance.title,
+                          description: m.maintenance.description ?? undefined,
+                          startAt: m.maintenance.startAt,
+                          endAt: m.maintenance.endAt,
+                          impact: m.maintenance.impact,
+                          sourceUrl: m.maintenance.sourceUrl ?? undefined,
+                        },
+                      ]
+                    : [],
+                upcoming:
+                  m.maintenance.status === 'upcoming'
+                    ? [
+                        {
+                          id: m.maintenance.id,
+                          slugs: [m.slug],
+                          title: m.maintenance.title,
+                          description: m.maintenance.description ?? undefined,
+                          startAt: m.maintenance.startAt,
+                          endAt: m.maintenance.endAt,
+                          impact: m.maintenance.impact,
+                          sourceUrl: m.maintenance.sourceUrl ?? undefined,
+                        },
+                      ]
+                    : [],
+              }}
+            />
+          )}
 
           {m.lastError === 'waf_403' && (
             <Notice tone="info" className="mt-4">

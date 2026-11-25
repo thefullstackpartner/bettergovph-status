@@ -55,16 +55,22 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
           <div className="text-[11px] text-ed-ink-4">
             {monitor.lastError === 'waf_403'
               ? 'WAF 403'
-              : monitor.lastError === 'maintenance'
-                ? 'Maintenance'
-                : monitor.lastError === 'not_found'
-                  ? 'HTTP 404'
-                  : monitor.lastError === 'timeout'
-                    ? 'Timed out'
-                    : `24h: ${formatUptime(monitor.uptime24h)}`}
+              : monitor.lastError === 'maintenance_scheduled'
+                ? 'Scheduled'
+                : monitor.lastError === 'maintenance'
+                  ? 'Maintenance'
+                  : monitor.lastError === 'not_found'
+                    ? 'HTTP 404'
+                    : monitor.lastError === 'timeout'
+                      ? 'Timed out'
+                      : `24h: ${formatUptime(monitor.uptime24h)}`}
           </div>
         </div>
-        <StatusPill status={monitor.status} error={monitor.lastError} />
+        <StatusPill
+          status={monitor.status}
+          error={monitor.lastError}
+          maintenance={monitor.maintenance}
+        />
         {monitor.freshness?.enabled && (
           <FreshnessPill
             status={monitor.freshness.status}

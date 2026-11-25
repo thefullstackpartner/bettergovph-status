@@ -8,7 +8,11 @@ import {
   Pagination,
   SectionHeader,
 } from '../components/ui';
-import { MonitorRow, OverallBanner } from '../components/status';
+import {
+  MaintenanceBanner,
+  MonitorRow,
+  OverallBanner,
+} from '../components/status';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useSummary } from '../hooks/useSummary';
 import { SUGGEST_PORTAL_URL } from '../lib/links';
@@ -143,6 +147,8 @@ const Home: FC = () => {
             activeStatus={statusFilter}
             onFilterStatus={status => updateParam('status', status)}
           />
+
+          <MaintenanceBanner maintenances={data.maintenances} />
 
           <section className="mt-8" aria-label="Filter monitored portals">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

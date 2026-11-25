@@ -1,10 +1,11 @@
 import { FC } from 'react';
 import { cn } from '../../lib/utils';
-import type { CheckStatus } from '../../types';
+import type { CheckStatus, MonitorMaintenance } from '../../types';
 
 type Props = {
   status: CheckStatus | 'unknown';
   error?: string | null;
+  maintenance?: MonitorMaintenance | null;
   className?: string;
 };
 
@@ -40,20 +41,39 @@ const WAF_STYLE = {
   pill: 'border-indigo-300 bg-indigo-50 text-indigo-800',
 };
 
-const StatusPill: FC<Props> = ({ status, error, className }) => {
-  const isWaf = status === 'degraded' && error === 'waf_403';
-  const isMaintenance = status === 'down' && error === 'maintenance';
-  const isNotFound = status === 'down' && error === 'not_found';
-  const isTimeout = status === 'down' && error === 'timeout';
-  const cfg = isWaf ? WAF_STYLE : STYLES[status];
-  const label = isMaintenance
-    ? 'Under Maintenance'
-    : isNotFound
-      ? 'Not Found (404)'
-      : isTimeout
-        ? 'Down · Timeout'
-        : cfg.label;
-  const title = isWaf
+const SCHEDULED_MAINTENANCE_STYLE = {
+  label: 'Scheduled Maintenance',
+  dot: 'bg-amber-500',
+  pill: 'border-amber-300 bg-amber-50 text-amber-900',
+};
+
+const StatusPill: FC<Props> = ({ status, error, maintenance, className }) => {
+  const isScheduledMaintenance =
+    (status !== 'up' && error === 'maintenance_scheduled') ||
+    (status !== 'up' && maintenance?.status === 'active');
+  const isWaf = !isScheduledMaintenance && status === 'degraded' && error === 'waf_403';
+  const isMaintenance = !isScheduledMaintenance && status === 'down' && error === 'maintenance';
+  const isNotFound = !isScheduledMaintenance && status === 'down' && error === 'not_found';
+  const isTimeout = !isScheduledMaintenance && status === 'down' && error === 'timeout';
+  const cfg = isScheduledMaintenance
+    ? SCHEDULED_MAINTENANCE_STYLE
+    : isWaf
+      ? WAF_STYLE
+      : STYLES[status];
+  const label = isScheduledMaintenance
+    ? cfg.label
+    : isMaintenance
+      ? 'Under Maintenance'
+      : isNotFound
+        ? 'Not Found (404)'
+        : isTimeout
+          ? 'Down · Timeout'
+          : cfg.label;
+  const title = isScheduledMaintenance
+    ? maintenance?.title
+      ? `Scheduled maintenance: ${maintenance.title}`
+      : 'This portal is undergoing scheduled maintenance.'
+    : isWaf
     ? 'This portal’s firewall blocked automated monitoring; it may still be accessible in your browser.'
     : isMaintenance
       ? 'This portal is displaying a maintenance page and cannot currently be used.'

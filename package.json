@@ -13,7 +13,7 @@
     "db:migrate:local": "node scripts/run-local-sql.mjs supabase/migrations/20261124000000_bgovph_init.sql",
     "db:down:local": "node scripts/run-local-sql.mjs supabase/bgovph_down.sql",
     "import:websites": "tsx scripts/import-bettergov-websites.ts",
-    "validate:data": "node scripts/validate-json-schema.js src/data/schema/categories.schema.json \"src/data/categories.json\" && node scripts/validate-json-schema.js src/data/schema/monitors.schema.json \"src/data/monitors/**/*.json\"",
+    "validate:data": "node scripts/validate-json-schema.js src/data/schema/categories.schema.json \"src/data/categories.json\" && node scripts/validate-json-schema.js src/data/schema/monitors.schema.json \"src/data/monitors/**/*.json\" && node scripts/validate-json-schema.js src/data/schema/maintenance.schema.json \"src/data/maintenance.json\"",
     "check:trigger": "node -e \"fetch('http://127.0.0.1:5525/api/trigger',{method:'POST'}).then(async r=>{console.log(r.status,await r.text());if(!r.ok)process.exit(1)})\"",
     "check:freshness": "tsx scripts/local-cron.ts --freshness-only --once",
     "check:freshness:watch": "tsx scripts/local-cron.ts --freshness-only",

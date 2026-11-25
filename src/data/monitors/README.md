@@ -17,3 +17,22 @@ Monitor definitions are committed as JSON files and bundled into the Worker at b
 ## Agency Opt-Out
 
 Government portal administrators who wish to adjust a check URL, set a custom `expectedStatus`, or opt out of monitoring can open an issue in this repository.
+
+## Scheduled Maintenance (`src/data/maintenance.json`)
+
+Planned agency maintenance windows can be declared in `src/data/maintenance.json` (validated against `src/data/schema/maintenance.schema.json`):
+
+```json
+[
+  {
+    "id": "bir-efps-2026-12-01",
+    "slugs": ["bir-efps"],
+    "title": "BIR eFPS Scheduled System Maintenance",
+    "description": "Database upgrade window announced by BIR.",
+    "startAt": "2026-12-01T16:00:00Z",
+    "endAt": "2026-12-01T20:00:00Z",
+    "impact": "down",
+    "sourceUrl": "https://www.bir.gov.ph/"
+  }
+]
+```

@@ -7,6 +7,7 @@ import type {
   MonitorDefinition,
 } from '../types';
 import { enabledMonitors, getMonitorBySlug } from './monitors';
+import { getActiveMaintenanceForSlug } from './maintenance';
 import { recordChecks, recordFreshness } from './supabase';
 
 export const BATCH_SIZE = 16;
@@ -51,17 +52,32 @@ export async function processBatch(
     monitors.map(m => runners[m.type](m, { userAgent, colo }))
   );
 
+  const now = new Date();
   const results: CheckResult[] = settled.map((res, idx) => {
-    if (res.status === 'fulfilled') return res.value;
-    return {
-      monitor_slug: monitors[idx].slug,
-      checked_at: new Date().toISOString(),
-      status: 'down',
-      http_status: null,
-      response_ms: 0,
-      error: 'connect',
-      colo,
-    };
+    const base: CheckResult =
+      res.status === 'fulfilled'
+        ? res.value
+        : {
+            monitor_slug: monitors[idx].slug,
+            checked_at: now.toISOString(),
+            status: 'down',
+            http_status: null,
+            response_ms: 0,
+            error: 'connect',
+            colo,
+          };
+
+    if (
+      base.status !== 'up' &&
+      getActiveMaintenanceForSlug(base.monitor_slug, now)
+    ) {
+      return {
+        ...base,
+        status: 'degraded',
+        error: 'maintenance_scheduled',
+      };
+    }
+    return base;
   });
 
   await recordChecks(env, results);

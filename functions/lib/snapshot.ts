@@ -1,5 +1,12 @@
 import type { Env, FreshnessSignalSource, FreshnessStatus } from '../types';
 import { computeFreshnessStatus, getFreshnessStaleDays } from './freshness';
+import {
+  type MaintenanceWindow,
+  type MonitorMaintenance,
+  getActiveMaintenances,
+  getMonitorMaintenance,
+  getUpcomingMaintenances,
+} from './maintenance';
 import { categories, enabledMonitors } from './monitors';
 import { fetchSummaryFromDb } from './supabase';
 
@@ -30,6 +37,10 @@ export interface SummarySnapshot {
     stale: number;
   };
   categories: typeof categories;
+  maintenances: {
+    active: MaintenanceWindow[];
+    upcoming: MaintenanceWindow[];
+  };
   monitors: Array<{
     slug: string;
     name: string;
@@ -47,6 +58,7 @@ export interface SummarySnapshot {
     lastColo: string | null;
     uptime24h: number | null;
     avgMs24h: number | null;
+    maintenance?: MonitorMaintenance | null;
     freshness: MonitorFreshnessSummary;
     bars90d: Array<{
       day: string;
@@ -140,6 +152,7 @@ export async function buildSummarySnapshot(env: Env): Promise<SummarySnapshot> {
       lastColo: st?.last_colo ?? null,
       uptime24h,
       avgMs24h: u24?.avg_ms_24h ?? null,
+      maintenance: getMonitorMaintenance(m.slug, now),
       freshness: {
         enabled: freshnessEnabled,
         status: freshnessStatus,
@@ -171,6 +184,10 @@ export async function buildSummarySnapshot(env: Env): Promise<SummarySnapshot> {
       stale,
     },
     categories,
+    maintenances: {
+      active: getActiveMaintenances(now),
+      upcoming: getUpcomingMaintenances(now),
+    },
     monitors,
   };
 }

@@ -56,6 +56,28 @@ export interface HourlyBar {
   avgMs: number;
 }
 
+export interface MaintenanceWindow {
+  id: string;
+  slugs: string[];
+  title: string;
+  description?: string;
+  startAt: string;
+  endAt: string;
+  impact?: 'down' | 'degraded' | 'partial';
+  sourceUrl?: string;
+}
+
+export interface MonitorMaintenance {
+  id: string;
+  status: 'active' | 'upcoming';
+  title: string;
+  description: string | null;
+  startAt: string;
+  endAt: string;
+  impact: 'down' | 'degraded' | 'partial';
+  sourceUrl: string | null;
+}
+
 export interface MonitorSummary {
   slug: string;
   name: string;
@@ -73,6 +95,7 @@ export interface MonitorSummary {
   lastColo: string | null;
   uptime24h: number | null;
   avgMs24h: number | null;
+  maintenance?: MonitorMaintenance | null;
   freshness?: MonitorFreshness;
   bars90d: DailyBar[];
   hourly24h?: HourlyBar[];
@@ -93,6 +116,10 @@ export interface SummaryResponse {
     stale?: number;
   };
   categories: Category[];
+  maintenances?: {
+    active: MaintenanceWindow[];
+    upcoming: MaintenanceWindow[];
+  };
   monitors: MonitorSummary[];
 }
 
