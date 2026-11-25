@@ -17,6 +17,7 @@ import { onDashboardRequest } from './api/dashboard';
 import { onMonitorHistoryRequest } from './api/history';
 import { onIncidentsRequest } from './api/incidents';
 import { onMonitorDetailRequest, onMonitorsRequest } from './api/monitors';
+import { onScorecardsRequest } from './api/scorecards';
 import { onSummaryRequest } from './api/summary';
 import { onTriggerRequest } from './api/trigger';
 import {
@@ -57,6 +58,7 @@ api.use('*', requireSupabaseEnv);
 
 api.get('/summary', onSummaryRequest);
 api.get('/dashboard', onDashboardRequest);
+api.get('/scorecards', onScorecardsRequest);
 api.get('/status.md', onStatusMarkdownRequest);
 api.get('/incidents.md', onIncidentsMarkdownRequest);
 api.get('/monitors', onMonitorsRequest);

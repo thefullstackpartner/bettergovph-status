@@ -46,6 +46,14 @@ const Footer: FC = () => {
                 </Link>
               </li>
               <li>
+                <Link
+                  to="/scorecards"
+                  className="text-ed-ink-2 no-underline hover:text-ed-navy hover:underline"
+                >
+                  Reliability Scorecards
+                </Link>
+              </li>
+              <li>
                 <a
                   href="/incidents.rss"
                   target="_blank"

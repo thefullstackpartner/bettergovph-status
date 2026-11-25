@@ -11,6 +11,7 @@ const LINKS = [
   { label: 'Dashboard', href: '/' },
   { label: 'Status Overview', href: '/status' },
   { label: 'Incidents', href: '/incidents' },
+  { label: 'Scorecards', href: '/scorecards' },
   { label: 'About & Methodology', href: '/about' },
 ];
 

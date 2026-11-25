@@ -88,6 +88,40 @@ export async function pruneOldChecks(env: Env, days = 30): Promise<number> {
   return Number(data ?? 0);
 }
 
+export interface ScorecardsDbPayload {
+  days: number;
+  monitors: Array<{
+    monitor_slug: string;
+    total: number;
+    up: number;
+    degraded: number;
+    waf: number;
+    down: number;
+    sum_ms: number;
+    max_ms: number;
+  }>;
+  incidents: Array<{
+    monitor_slug: string;
+    incident_count: number;
+    open_incidents: number;
+    mttr_sec: number | null;
+  }>;
+}
+
+export async function fetchScorecardsFromDb(
+  env: Env,
+  days: number
+): Promise<ScorecardsDbPayload> {
+  const supabase = getSupabase(env);
+  const { data, error } = await supabase.rpc('bgovph_get_scorecards', {
+    p_days: days,
+  });
+  if (error) {
+    throw new Error(`bgovph_get_scorecards failed: ${error.message}`);
+  }
+  return data as ScorecardsDbPayload;
+}
+
 export interface DashboardDbPayload {
   days: number;
   monitors: Array<{

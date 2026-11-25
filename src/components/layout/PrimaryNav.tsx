@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', href: '/' },
   { label: 'Status Overview', href: '/status' },
   { label: 'Incidents', href: '/incidents' },
+  { label: 'Scorecards', href: '/scorecards' },
   { label: 'About & Methodology', href: '/about' },
 ];
 

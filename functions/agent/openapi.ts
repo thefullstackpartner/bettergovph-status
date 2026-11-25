@@ -356,6 +356,52 @@ export function buildOpenApiSpec(site: string): Schema {
           },
         },
       },
+      '/api/scorecards': {
+        get: {
+          operationId: 'getScorecards',
+          tags: ['analytics'],
+          summary:
+            'Agency and portal reliability scorecards (JSON or CSV export)',
+          parameters: [
+            {
+              name: 'period',
+              in: 'query',
+              schema: {
+                type: 'string',
+                enum: ['7d', '30d', '90d', '1y'],
+                default: '30d',
+              },
+            },
+            {
+              name: 'tier',
+              in: 'query',
+              schema: {
+                type: 'string',
+                enum: ['all', 'critical', 'standard'],
+                default: 'all',
+              },
+            },
+            {
+              name: 'format',
+              in: 'query',
+              schema: {
+                type: 'string',
+                enum: ['json', 'csv'],
+                default: 'json',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Reliability scorecards as JSON or CSV',
+              content: {
+                'application/json': { schema: { type: 'object' } },
+                'text/csv': { schema: { type: 'string' } },
+              },
+            },
+          },
+        },
+      },
       '/status.md': {
         get: {
           operationId: 'getStatusMarkdown',

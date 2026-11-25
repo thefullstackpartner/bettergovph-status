@@ -4,6 +4,7 @@ import type {
   DashboardTierFilter,
   MonitorDetailResponse,
   MonitorHistoryResponse,
+  ScorecardsResponse,
   SummaryResponse,
 } from '../types';
 
@@ -57,5 +58,14 @@ export function getDashboard(
 ): Promise<DashboardResponse> {
   return fetchJson<DashboardResponse>(
     `/api/dashboard?range=${encodeURIComponent(range)}&tier=${encodeURIComponent(tier)}`
+  );
+}
+
+export function getScorecards(
+  period: DashboardRange,
+  tier: DashboardTierFilter
+): Promise<ScorecardsResponse> {
+  return fetchJson<ScorecardsResponse>(
+    `/api/scorecards?period=${encodeURIComponent(period)}&tier=${encodeURIComponent(tier)}`
   );
 }

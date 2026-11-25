@@ -50,6 +50,7 @@ export function buildLlmsTxt(site: string): string {
 - [Monitor history](${site}/api/monitors/{slug}/history?range=24h): raw check points (\`24h\`, \`7d\`, \`30d\`) or daily rollups (\`90d\`)
 - [Incidents](${site}/api/incidents?status=open): paginated incident list (25 per page)
 - [Dashboard analytics](${site}/api/dashboard?range=30d): availability KPIs, category performance and leaderboards (\`7d\`, \`30d\`, \`90d\`, \`1y\`; \`tier=all|critical|standard\`)
+- [Reliability scorecards](${site}/api/scorecards?period=30d): per-monitor and per-category grades, availability %, incidents, MTTR (\`format=json|csv\`)
 - [Full summary](${site}/api/summary): complete snapshot incl. 90-day and 24-hour bars for every monitor (large)
 
 ## Data & definitions

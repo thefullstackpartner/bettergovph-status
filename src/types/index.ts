@@ -159,6 +159,54 @@ export interface MonitorHistoryResponse {
 export type DashboardRange = '7d' | '30d' | '90d' | '1y';
 export type DashboardTierFilter = 'all' | 'critical' | 'standard';
 
+export type ScorecardGrade = 'A' | 'B' | 'C' | 'D' | 'F' | 'N/A';
+
+export interface ScorecardMonitorRow {
+  slug: string;
+  name: string;
+  agency: string;
+  url: string;
+  category: string;
+  categoryName: string;
+  tier: MonitorTier;
+  checksTotal: number;
+  availabilityPct: number | null;
+  cleanUptimePct: number | null;
+  avgMs: number | null;
+  maxMs: number;
+  incidentCount: number;
+  openIncidents: number;
+  mttrSec: number | null;
+  grade: ScorecardGrade;
+}
+
+export interface ScorecardCategoryRow {
+  category: string;
+  categoryName: string;
+  monitorCount: number;
+  checksTotal: number;
+  availabilityPct: number | null;
+  avgMs: number | null;
+  incidentCount: number;
+  mttrSec: number | null;
+  grade: ScorecardGrade;
+}
+
+export interface ScorecardsResponse {
+  generatedAt: string;
+  period: DashboardRange;
+  days: number;
+  tier: DashboardTierFilter;
+  summary: {
+    totalMonitors: number;
+    avgAvailabilityPct: number | null;
+    totalIncidents: number;
+    avgMttrSec: number | null;
+  };
+  categories: ScorecardCategoryRow[];
+  monitors: ScorecardMonitorRow[];
+}
+
 export interface DashboardKpis {
   totalMonitors: number;
   totalChecks: number;

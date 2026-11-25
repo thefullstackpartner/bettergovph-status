@@ -1,9 +1,11 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Footer, Masthead } from './components/layout';
+import { Container } from './components/ui';
 import Home from './pages/Home';
 import MonitorDetailPage from './pages/monitors/[slug]';
 import IncidentsPage from './pages/incidents';
+import ScorecardsPage from './pages/scorecards';
 import AboutPage from './pages/about';
 import NotFound from './pages/NotFound';
 
@@ -17,9 +19,11 @@ export function App() {
         <main className="flex-1">
           <Suspense
             fallback={
-              <div className="mx-auto max-w-page px-4 py-8 font-sans-ed text-sm text-ed-ink-3">
-                Loading page...
-              </div>
+              <Container className="py-8">
+                <div className="border border-ed-rule bg-ed-paper-2 p-8 font-sans-ed text-sm text-ed-ink-3">
+                  Loading...
+                </div>
+              </Container>
             }
           >
             <Routes>
@@ -28,6 +32,7 @@ export function App() {
               <Route path="/status" element={<Home />} />
               <Route path="/monitors/:slug" element={<MonitorDetailPage />} />
               <Route path="/incidents" element={<IncidentsPage />} />
+              <Route path="/scorecards" element={<ScorecardsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

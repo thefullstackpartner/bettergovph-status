@@ -31,11 +31,11 @@ Distinguish scheduled agency maintenance from unplanned outages so SLA metrics s
 ### 1.3 Agency Reliability Scorecards & CSV/JSON Exports
 Turn existing 365-day `bgovph_daily_stats` data into actionable public accountability reports.
 
-- [ ] Add a Supabase RPC migration (`supabase/migrations/*_bgovph_scorecards.sql`) computing per-monitor and per-category monthly/quarterly metrics: Uptime %, Incident Count, Mean Time to Recovery (MTTR), and Freshness compliance
-- [ ] Add `GET /api/scorecards` (with `?period=30d|90d|month` and `?format=json|csv`) in `functions/api/scorecards.ts`, edge-cached
-- [ ] Update `functions/agent/openapi.ts` and `functions/agent/llms.ts` with the `/api/scorecards` contract
-- [ ] Build a `/scorecards` (or `/reports`) page in `src/pages/` using existing `src/components/ui` components, with agency/category rankings and one-click CSV/JSON download
-- [ ] Add unit tests for MTTR calculation, CSV serialization, and migration `bgovph_` naming compliance
+- [x] Add a Supabase RPC migration (`supabase/migrations/*_bgovph_scorecards.sql`) computing per-monitor and per-category monthly/quarterly metrics: Uptime %, Incident Count, Mean Time to Recovery (MTTR), and Freshness compliance
+- [x] Add `GET /api/scorecards` (with `?period=30d|90d|month` and `?format=json|csv`) in `functions/api/scorecards.ts`, edge-cached
+- [x] Update `functions/agent/openapi.ts` and `functions/agent/llms.ts` with the `/api/scorecards` contract
+- [x] Build a `/scorecards` (or `/reports`) page in `src/pages/` using existing `src/components/ui` components, with agency/category rankings and one-click CSV/JSON download
+- [x] Add unit tests for MTTR calculation, CSV serialization, and migration `bgovph_` naming compliance
 
 ---
 

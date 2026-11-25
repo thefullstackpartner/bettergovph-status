@@ -26,7 +26,7 @@ export default defineConfig({
           target: 'http://127.0.0.1:5525',
           changeOrigin: true,
         },
-      '^/api/(summary|dashboard|monitors(?:/.*)?|incidents(?:\\.md)?|status\\.md|openapi\\.json)(?:\\?|$)':
+      '^/api/(summary|dashboard|scorecards|monitors(?:/.*)?|incidents(?:\\.md)?|status\\.md|openapi\\.json)(?:\\?|$)':
         {
           target: 'http://127.0.0.1:5525',
           changeOrigin: true,
