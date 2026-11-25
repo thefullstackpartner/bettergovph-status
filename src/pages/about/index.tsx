@@ -96,6 +96,43 @@ const AboutPage: FC = () => {
       </section>
 
       <section>
+        <SectionHeader label="Content Freshness &amp; Update Frequency" />
+        <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
+          <p>
+            Beyond uptime and latency, selected data portals (such as{' '}
+            <strong>Project DIME</strong>, <strong>DPWH Transparency</strong>,
+            and <strong>Sumbong sa Pangulo</strong>) are probed every{' '}
+            <strong>6 hours</strong> to measure how often their content updates
+            and whether their data has gone stale.
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong>Portal-specific probes:</strong> Each tracked portal uses
+              a dedicated probe implementation—for example, inspecting Next.js{' '}
+              <code>__NEXT_DATA__</code> payloads, WordPress REST APIs, XML
+              sitemaps, HTML metadata, or normalized SHA-256 content
+              fingerprints (stripping volatile CSRF/nonce tokens and scripts).
+            </li>
+            <li>
+              <strong>Calculated staleness (default 30 days):</strong>{' '}
+              Freshness status (<strong>Fresh</strong> vs.{' '}
+              <strong>Stale</strong>) is calculated dynamically at read time
+              from the most recent detected update or content change against a
+              configurable threshold (<code>FRESHNESS_STALE_DAYS</code>, default{' '}
+              <code>30</code> days).
+            </li>
+            <li>
+              <strong>Independent from uptime:</strong> Stale content never
+              marks a portal as <strong>Down</strong> or opens an outage
+              incident. If a freshness probe is blocked by a portal WAF (
+              <code>403</code>), previously recorded freshness history is
+              preserved.
+            </li>
+          </ul>
+        </Card>
+      </section>
+
+      <section>
         <SectionHeader label="Uptime Bar Color Legend" />
         <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <p>

@@ -4,7 +4,7 @@
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
   "triggers": {
-    "crons": ["*/5 * * * *", "15 16 * * *"]
+    "crons": ["*/5 * * * *", "0 */6 * * *", "15 16 * * *"]
   },
   "assets": {
     "directory": "./dist",
@@ -23,7 +23,8 @@
     }
   ],
   "vars": {
-    "USER_AGENT": "bettergovph-status/1.0 (+https://bettergovph-status.workers.dev/about)"
+    "USER_AGENT": "bettergovph-status/1.0 (+https://bettergovph-status.workers.dev/about)",
+    "FRESHNESS_STALE_DAYS": "30"
   },
   "env": {
     "staging": {

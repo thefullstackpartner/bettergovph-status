@@ -445,7 +445,8 @@
     "method": "GET",
     "degradedMs": 3000,
     "source": "curated",
-    "enabled": true
+    "enabled": true,
+    "freshnessEnabled": true
   },
   {
     "slug": "dpwh-transparency",
@@ -459,7 +460,8 @@
     "method": "GET",
     "degradedMs": 3000,
     "source": "curated",
-    "enabled": true
+    "enabled": true,
+    "freshnessEnabled": true
   },
   {
     "slug": "dbm-dime",
@@ -473,6 +475,7 @@
     "method": "GET",
     "degradedMs": 3000,
     "source": "curated",
-    "enabled": true
+    "enabled": true,
+    "freshnessEnabled": true
   }
 ]

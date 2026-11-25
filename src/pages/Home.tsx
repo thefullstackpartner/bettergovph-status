@@ -25,11 +25,13 @@ const Home: FC = () => {
   const category = searchParams.get('category') ?? 'all';
   const statusFilter = searchParams.get('status') ?? 'all';
   const tierFilter = searchParams.get('tier') ?? 'all';
+  const freshnessFilter = searchParams.get('freshness') ?? 'all';
+  const sortBy = searchParams.get('sort') ?? 'default';
   const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
 
   const updateParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
-    if (!value || value === 'all') next.delete(key);
+    if (!value || value === 'all' || value === 'default') next.delete(key);
     else next.set(key, value);
     if (key !== 'page') next.delete('page');
     setSearchParams(next);
@@ -40,13 +42,26 @@ const Home: FC = () => {
     [data]
   );
 
+  const freshnessCount = useMemo(
+    () => (data ? data.monitors.filter(m => m.freshness?.enabled).length : 0),
+    [data]
+  );
+
   const filteredMonitors = useMemo(() => {
     if (!data) return [];
     const q = query.trim().toLowerCase();
-    return data.monitors.filter(m => {
+    const list = data.monitors.filter(m => {
       if (category !== 'all' && m.category !== category) return false;
       if (tierFilter === 'critical' && m.tier !== 'critical') return false;
+      if (tierFilter === 'freshness' && !m.freshness?.enabled) return false;
       if (statusFilter === 'critical' && m.tier !== 'critical') return false;
+      if (freshnessFilter === 'monitored' && !m.freshness?.enabled) return false;
+      if (
+        (freshnessFilter === 'fresh' || freshnessFilter === 'stale') &&
+        (!m.freshness?.enabled || m.freshness.status !== freshnessFilter)
+      ) {
+        return false;
+      }
       if (
         statusFilter === 'waf' &&
         !(m.status === 'degraded' && m.lastError === 'waf_403')
@@ -75,7 +90,26 @@ const Home: FC = () => {
       }
       return true;
     });
-  }, [data, query, category, statusFilter, tierFilter]);
+
+    if (sortBy === 'recently_updated' || sortBy === 'most_stale') {
+      const getRefMs = (m: (typeof list)[number]) => {
+        const iso = m.freshness?.contentUpdatedAt ?? m.freshness?.lastChangedAt;
+        if (!iso) return null;
+        const ms = Date.parse(iso);
+        return Number.isFinite(ms) ? ms : null;
+      };
+      return [...list].sort((a, b) => {
+        const aMs = getRefMs(a);
+        const bMs = getRefMs(b);
+        if (aMs === null && bMs === null) return 0;
+        if (aMs === null) return 1;
+        if (bMs === null) return -1;
+        return sortBy === 'recently_updated' ? bMs - aMs : aMs - bMs;
+      });
+    }
+
+    return list;
+  }, [data, query, category, statusFilter, tierFilter, freshnessFilter, sortBy]);
 
   const totalPages = Math.max(
     1,
@@ -140,23 +174,31 @@ const Home: FC = () => {
             </div>
 
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-ed-rule bg-ed-paper-2 px-3 py-2.5">
-              <p className="font-sans-ed text-xs text-ed-ink-3">
+              <p className="max-w-3xl font-sans-ed text-xs text-ed-ink-3">
                 <strong>Critical</strong> marks {criticalCount} curated,
                 high-impact citizen portals checked every 5 minutes; standard
                 portals are checked every 15 minutes.{' '}
+                <strong>Freshness</strong> tracks {freshnessCount} portals every
+                6 hours using portal-specific API, sitemap, and content-hash
+                probes (marked stale after {data.freshnessStaleDays ?? 30}{' '}
+                days).{' '}
                 <Link to="/about" className="text-ed-navy hover:underline">
                   Learn more
                 </Link>
                 .
               </p>
               <div
-                className="ml-auto flex items-center gap-1.5"
+                className="ml-auto flex flex-wrap items-center gap-1.5"
                 role="group"
-                aria-label="Filter by portal tier"
+                aria-label="Filter by portal tier or freshness"
               >
                 <Button
                   size="sm"
-                  variant={tierFilter !== 'critical' ? 'solid' : 'ghost'}
+                  variant={
+                    tierFilter !== 'critical' && tierFilter !== 'freshness'
+                      ? 'solid'
+                      : 'ghost'
+                  }
                   onClick={() => updateParam('tier', 'all')}
                 >
                   All ({data.monitors.length})
@@ -168,10 +210,17 @@ const Home: FC = () => {
                 >
                   Critical ({criticalCount})
                 </Button>
+                <Button
+                  size="sm"
+                  variant={tierFilter === 'freshness' ? 'solid' : 'ghost'}
+                  onClick={() => updateParam('tier', 'freshness')}
+                >
+                  Freshness ({freshnessCount})
+                </Button>
               </div>
             </div>
 
-            <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-[1fr_240px_180px]">
+            <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-[1fr_210px_170px_170px_170px]">
               <div className="relative">
                 <SearchIcon
                   size={16}
@@ -221,6 +270,43 @@ const Home: FC = () => {
                   <option value="waf">Probe Blocked (WAF)</option>
                   <option value="up">Operational</option>
                   <option value="unknown">Pending</option>
+                </select>
+                <ChevronDownIcon
+                  size={16}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ed-ink-3"
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div className="relative">
+                <select
+                  aria-label="Filter by content freshness"
+                  value={freshnessFilter}
+                  onChange={e => updateParam('freshness', e.target.value)}
+                  className="h-11 w-full appearance-none border border-ed-rule-strong bg-white pl-3 pr-9 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
+                >
+                  <option value="all">All freshness</option>
+                  <option value="monitored">Freshness tracked</option>
+                  <option value="fresh">Fresh content</option>
+                  <option value="stale">Stale content</option>
+                </select>
+                <ChevronDownIcon
+                  size={16}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ed-ink-3"
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div className="relative">
+                <select
+                  aria-label="Sort portals"
+                  value={sortBy}
+                  onChange={e => updateParam('sort', e.target.value)}
+                  className="h-11 w-full appearance-none border border-ed-rule-strong bg-white pl-3 pr-9 font-sans-ed text-sm text-ed-ink outline-none focus:border-ed-navy"
+                >
+                  <option value="default">Default order</option>
+                  <option value="recently_updated">Recently updated</option>
+                  <option value="most_stale">Most stale first</option>
                 </select>
                 <ChevronDownIcon
                   size={16}

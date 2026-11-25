@@ -4,6 +4,7 @@ import { ExternalLinkIcon } from 'lucide-react';
 import { formatMs, formatUptime } from '../../lib/format';
 import type { MonitorSummary } from '../../types';
 import StatusPill from './StatusPill';
+import FreshnessPill from './FreshnessPill';
 import UptimeBars from './UptimeBars';
 
 type Props = {
@@ -46,7 +47,7 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
         </p>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="text-right font-mono-ed text-xs">
           <div className="font-medium text-ed-ink">
             {formatMs(monitor.lastResponseMs)}
@@ -64,6 +65,16 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
           </div>
         </div>
         <StatusPill status={monitor.status} error={monitor.lastError} />
+        {monitor.freshness?.enabled && (
+          <FreshnessPill
+            status={monitor.freshness.status}
+            referenceDate={
+              monitor.freshness.contentUpdatedAt ??
+              monitor.freshness.lastChangedAt
+            }
+            probeError={monitor.freshness.probeError}
+          />
+        )}
       </div>
     </div>
 

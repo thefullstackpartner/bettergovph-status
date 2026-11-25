@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import type { Env } from '../types';
-import { runCycle } from '../lib/scheduler';
+import { runCycle, runFreshnessCycle } from '../lib/scheduler';
 
 /**
  * Manual status check trigger for local dev (127.0.0.1/localhost without CF-Connecting-IP)
@@ -30,7 +30,11 @@ export async function onTriggerRequest(c: Context<{ Bindings: Env }>) {
   const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : undefined;
   const rawOffset = Number(c.req.query('offset') ?? '0');
   const offset = Number.isFinite(rawOffset) && rawOffset > 0 ? rawOffset : 0;
+  const kind = c.req.query('kind') === 'freshness' ? 'freshness' : 'uptime';
 
-  const result = await runCycle(c.env, { tier, limit, offset });
-  return c.json({ ok: true, ...result });
+  const result =
+    kind === 'freshness'
+      ? await runFreshnessCycle(c.env, { limit, offset })
+      : await runCycle(c.env, { tier, limit, offset });
+  return c.json({ ok: true, kind, ...result });
 }

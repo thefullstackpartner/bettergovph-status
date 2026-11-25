@@ -1,9 +1,16 @@
 import { runners } from '../checks';
-import type { CheckResult, Env, MonitorDefinition } from '../types';
+import { runFreshnessCheck } from '../checks/freshness';
+import type {
+  CheckResult,
+  Env,
+  FreshnessResult,
+  MonitorDefinition,
+} from '../types';
 import { enabledMonitors, getMonitorBySlug } from './monitors';
-import { recordChecks } from './supabase';
+import { recordChecks, recordFreshness } from './supabase';
 
 export const BATCH_SIZE = 16;
+export const FRESHNESS_BATCH_SIZE = 8;
 
 export function selectDueMonitors(
   monitors: MonitorDefinition[],
@@ -103,6 +110,86 @@ export async function runCycle(
   const firstBatch = batches[0] ?? [];
   if (firstBatch.length > 0) {
     await processBatch(firstBatch, env);
+  }
+  return {
+    mode: 'inline',
+    scheduledCount: firstBatch.length,
+    totalDue: allDue.length,
+    batches: firstBatch.length > 0 ? 1 : 0,
+  };
+}
+
+export async function processFreshnessBatch(
+  slugs: string[],
+  env: Env,
+  colo: string | null = null
+): Promise<FreshnessResult[]> {
+  const userAgent =
+    env.USER_AGENT ??
+    'bettergovph-status/1.0 (+https://bettergovph-status.workers.dev/about)';
+
+  const monitors = slugs
+    .map(slug => getMonitorBySlug(slug))
+    .filter((m): m is MonitorDefinition => m !== undefined && Boolean(m.freshnessEnabled));
+
+  const settled = await Promise.allSettled(
+    monitors.map(m => runFreshnessCheck(m, { userAgent, colo }))
+  );
+
+  const results: FreshnessResult[] = settled.map((res, idx) => {
+    if (res.status === 'fulfilled') return res.value;
+    return {
+      monitor_slug: monitors[idx].slug,
+      checked_at: new Date().toISOString(),
+      signal_source: null,
+      content_updated_at: null,
+      content_hash: null,
+      etag: null,
+      http_last_modified: null,
+      probe_error: 'connect',
+    };
+  });
+
+  await recordFreshness(env, results);
+  return results;
+}
+
+export async function runFreshnessCycle(
+  env: Env,
+  options: { limit?: number; offset?: number } = {}
+): Promise<{
+  mode: 'queue' | 'inline';
+  scheduledCount: number;
+  totalDue: number;
+  batches: number;
+}> {
+  const allDue = enabledMonitors.filter(m => Boolean(m.freshnessEnabled));
+  const offset = Math.max(0, options.offset ?? 0);
+  let due = offset > 0 ? allDue.slice(offset) : allDue;
+  if (options.limit && options.limit > 0) {
+    due = due.slice(0, options.limit);
+  }
+
+  const batches = chunkArray(
+    due.map(m => m.slug),
+    FRESHNESS_BATCH_SIZE
+  );
+
+  if (env.CHECK_QUEUE) {
+    await env.CHECK_QUEUE.sendBatch(
+      batches.map(slugs => ({ body: { slugs, kind: 'freshness' as const } }))
+    );
+    return {
+      mode: 'queue',
+      scheduledCount: due.length,
+      totalDue: allDue.length,
+      batches: batches.length,
+    };
+  }
+
+  const firstBatch = batches[0] ?? [];
+  if (firstBatch.length > 0) {
+    await processFreshnessBatch(firstBatch, env);
   }
   return {
     mode: 'inline',

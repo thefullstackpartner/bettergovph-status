@@ -11,6 +11,7 @@ import {
   SectionHeader,
 } from '../../components/ui';
 import {
+  FreshnessPill,
   IncidentCard,
   ResponseTimeChart,
   StatusPill,
@@ -20,9 +21,11 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMonitorHistory } from '../../hooks/useMonitorHistory';
 import { getMonitorDetail } from '../../lib/api';
 import {
+  formatFreshnessSignal,
   formatIncidentCause,
   formatManilaTimestamp,
   formatMs,
+  formatRelativeTime,
   formatUptime,
 } from '../../lib/format';
 import { cn } from '../../lib/utils';
@@ -270,6 +273,118 @@ const MonitorDetailPage: FC = () => {
               />
             )}
           </section>
+
+          {m.freshness?.enabled && (
+            <section className="mt-8" aria-label="Content freshness">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <SectionHeader
+                  label="Content Freshness & Update Cadence"
+                  meta={`Stale threshold: ${detail.freshnessStaleDays ?? 30} days`}
+                  className="mb-0"
+                />
+                <FreshnessPill
+                  status={m.freshness.status}
+                  referenceDate={
+                    m.freshness.contentUpdatedAt ?? m.freshness.lastChangedAt
+                  }
+                  probeError={m.freshness.probeError}
+                />
+              </div>
+
+              <Card>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div>
+                    <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                      Last Content Update
+                    </div>
+                    <div className="mt-1 font-serif-ed text-lg font-bold text-ed-ink">
+                      {m.freshness.contentUpdatedAt || m.freshness.lastChangedAt
+                        ? formatRelativeTime(
+                            m.freshness.contentUpdatedAt ??
+                              m.freshness.lastChangedAt
+                          )
+                        : 'Pending'}
+                    </div>
+                    <div className="mt-0.5 font-mono-ed text-[11px] text-ed-ink-3">
+                      {formatManilaTimestamp(
+                        m.freshness.contentUpdatedAt ??
+                          m.freshness.lastChangedAt
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                      Detection Method
+                    </div>
+                    <div className="mt-1 font-sans-ed text-sm font-semibold text-ed-ink">
+                      {formatFreshnessSignal(m.freshness.signalSource)}
+                    </div>
+                    <div className="mt-0.5 font-mono-ed text-[11px] text-ed-ink-3">
+                      Checked {formatRelativeTime(m.freshness.lastCheckedAt)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                      Updates (30d)
+                    </div>
+                    <div className="mt-1 font-serif-ed text-lg font-bold text-ed-ink">
+                      {m.freshness.changeCount30d}
+                    </div>
+                    <div className="mt-0.5 font-mono-ed text-[11px] text-ed-ink-3">
+                      Detected changes
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="font-mono-ed text-[11px] uppercase text-ed-ink-4">
+                      Updates (90d)
+                    </div>
+                    <div className="mt-1 font-serif-ed text-lg font-bold text-ed-ink">
+                      {m.freshness.changeCount90d}
+                    </div>
+                    <div className="mt-0.5 font-mono-ed text-[11px] text-ed-ink-3">
+                      Detected changes
+                    </div>
+                  </div>
+                </div>
+
+                {m.freshness.probeError && (
+                  <Notice tone="info" className="mt-4">
+                    Last freshness probe returned{' '}
+                    <code>{m.freshness.probeError}</code>. Previously recorded
+                    freshness history is preserved.
+                  </Notice>
+                )}
+
+                {detail.freshnessEvents && detail.freshnessEvents.length > 0 && (
+                  <div className="mt-5 border-t border-ed-rule pt-4">
+                    <div className="mb-2 font-mono-ed text-[11px] uppercase tracking-[0.06em] text-ed-ink-4">
+                      Recent Detected Content Updates
+                    </div>
+                    <ul className="divide-y divide-ed-rule text-xs">
+                      {detail.freshnessEvents.slice(0, 8).map(ev => (
+                        <li
+                          key={ev.id}
+                          className="flex flex-wrap items-center justify-between gap-2 py-2"
+                        >
+                          <span className="font-sans-ed font-medium text-ed-ink">
+                            {formatFreshnessSignal(ev.signal_source)}
+                          </span>
+                          <span className="font-mono-ed text-ed-ink-3">
+                            {formatManilaTimestamp(
+                              ev.content_updated_at ?? ev.detected_at
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </Card>
+            </section>
+          )}
 
           <section className="mt-8">
             <SectionHeader

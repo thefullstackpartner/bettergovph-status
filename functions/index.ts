@@ -11,8 +11,17 @@ import {
   rejectDisallowedOrigin,
   requireSupabaseEnv,
 } from './lib/request-security';
-import { processBatch, runCycle } from './lib/scheduler';
-import { pruneOldChecks, pruneOldDailyStats } from './lib/supabase';
+import {
+  processBatch,
+  processFreshnessBatch,
+  runCycle,
+  runFreshnessCycle,
+} from './lib/scheduler';
+import {
+  pruneOldChecks,
+  pruneOldDailyStats,
+  pruneOldFreshnessEvents,
+} from './lib/supabase';
 import type { BatchMessage, Env } from './types';
 
 export const app = new Hono<{ Bindings: Env }>().basePath('/api');
@@ -55,12 +64,18 @@ export default {
         Promise.all([
           pruneOldChecks(env, 30),
           pruneOldDailyStats(env, 365),
-        ]).then(([deletedChecks, deletedDaily]) =>
+          pruneOldFreshnessEvents(env, 180),
+        ]).then(([deletedChecks, deletedDaily, deletedFreshness]) =>
           console.log(
-            `[prune] Deleted ${deletedChecks} raw checks (>30d) and ${deletedDaily} daily stats (>365d)`
+            `[prune] Deleted ${deletedChecks} raw checks (>30d), ${deletedDaily} daily stats (>365d), and ${deletedFreshness} freshness events (>180d)`
           )
         )
       );
+      return;
+    }
+
+    if (controller.cron === '0 */6 * * *') {
+      ctx.waitUntil(runFreshnessCycle(env));
       return;
     }
 
@@ -73,7 +88,11 @@ export default {
       return;
     }
     for (const msg of batch.messages) {
-      await processBatch(msg.body.slugs, env);
+      if (msg.body.kind === 'freshness') {
+        await processFreshnessBatch(msg.body.slugs, env);
+      } else {
+        await processBatch(msg.body.slugs, env);
+      }
       msg.ack();
     }
   },

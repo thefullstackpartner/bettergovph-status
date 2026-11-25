@@ -3,12 +3,14 @@ import {
   CategoryLeaderboard,
   DashboardKpiStrip,
   DashboardTrendCharts,
+  FreshnessWatchlist,
   IncidentCausesPanel,
   MonitorLeaderboard,
 } from '../../components/dashboard';
 import { Button, Container, Eyebrow, Notice } from '../../components/ui';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useSummary } from '../../hooks/useSummary';
 import { formatManilaTimestamp } from '../../lib/format';
 import type { DashboardRange, DashboardTierFilter } from '../../types';
 
@@ -32,6 +34,7 @@ const DashboardPage: FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const { data, loading, error } = useDashboard(range, tier);
+  const { data: summary } = useSummary();
 
   return (
     <Container className="py-8">
@@ -143,6 +146,13 @@ const DashboardPage: FC = () => {
             causes={data.incidentCauses}
             totalIncidents={data.kpis.totalIncidents}
           />
+
+          {summary && (
+            <FreshnessWatchlist
+              monitors={summary.monitors}
+              staleDays={summary.freshnessStaleDays}
+            />
+          )}
         </>
       )}
     </Container>

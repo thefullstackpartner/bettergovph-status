@@ -24,6 +24,20 @@ export function formatRelativeTime(iso: string | null | undefined): string {
   return `${diffDay}d ago`;
 }
 
+const SIGNAL_LABELS: Record<string, string> = {
+  api: 'API / JSON Probe',
+  sitemap: 'XML Sitemap',
+  rss: 'RSS / Atom Feed',
+  meta: 'HTML Metadata',
+  http_header: 'HTTP Last-Modified',
+  content_hash: 'Content Fingerprint',
+};
+
+export function formatFreshnessSignal(source: string | null | undefined): string {
+  if (!source) return 'Not yet detected';
+  return SIGNAL_LABELS[source] ?? source;
+}
+
 export function formatDuration(startIso: string, endIso: string | null): string {
   const start = new Date(startIso).getTime();
   const end = endIso ? new Date(endIso).getTime() : Date.now();

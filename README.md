@@ -16,9 +16,10 @@ Goals:
 
 ## Features
 
-- Tiered check intervals: **5 minutes** for the **31 curated Critical** citizen portals (`src/data/monitors/curated.json`), **15 minutes** for standard agency websites (`src/data/monitors/imported/*.json`), plus a daily cleanup cron at `16:15 UTC` (`00:15 Asia/Manila`) to prune raw checks older than 30 days
+- Tiered check intervals: **5 minutes** for curated **Critical** citizen portals (`src/data/monitors/curated.json`), **15 minutes** for standard agency websites (`src/data/monitors/imported/*.json`), **6 hours** (`0 */6 * * *`) for **Content Freshness** probes on enabled portals, plus a daily cleanup cron at `16:15 UTC` (`00:15 Asia/Manila`)
+- Content Freshness & Update Frequency monitoring via an OOP `FreshnessProbe` registry (`functions/checks/freshness/`) with portal-specific strategies (`dbm-dime`, `dpwh-transparency`, `sumbong-sa-pangulo`) and dynamically calculated staleness (`FRESHNESS_STALE_DAYS`, default `30` days)
 - Uptime Kuma-style 24-hour / 45-day / 90-day uptime bars with color-coded status legend (Operational, Degraded / partial outage, Probe Blocked (WAF), Down / Under Maintenance, No data) and response-time charts (`24h`, `7d`, `30d`, `90d`)
-- Quick **All / Critical** tier toggle and clickable overall status filters on the homepage, plus dedicated `/about` methodology & agency allowlisting documentation
+- Quick **All / Critical / Freshness** toggle, freshness filters & sorting on the homepage, **Content Freshness Watchlist** on `/dashboard`, and dedicated `/about` methodology & agency allowlisting documentation
 - 2-strike incident detection (1st failed check immediately marks the portal **Down** with its cause sub-status such as `Down · Timeout`, while an incident opens on 2 consecutive `down` checks and resolves on 2 consecutive non-down checks) with human-readable cause explanations
 - Data-as-code monitor definitions validated by JSON Schema
 - Hono-powered Cloudflare Worker API with edge-cached responses (`Cache-Control: s-maxage=60`) to absorb public traffic
@@ -68,8 +69,8 @@ npm run dev
 
 Local development does not run the 5-minute cron automatically. You can trigger a check cycle manually in either of two ways:
 
-1. Run `npm run check:trigger` for a one-off critical-tier run, `npm run check:watch` to run critical checks every 5 minutes, or `npm run check:watch:all` to also cycle through all standard-tier monitors every 15 minutes.
-2. Call Wrangler's scheduled endpoint: `curl "http://127.0.0.1:5525/__scheduled?cron=*/5+*+*+*+*"`
+1. Run `npm run check:trigger` for a one-off critical-tier run, `npm run check:freshness` for a one-off content freshness run, `npm run check:watch` to run critical checks every 5 minutes, `npm run check:freshness:watch` to watch freshness on an interval, or `npm run check:watch:all` to cycle through critical, standard (every 15m), and freshness (every 6h) checks together.
+2. Call Wrangler's scheduled endpoint: `curl "http://127.0.0.1:5525/__scheduled?cron=*/5+*+*+*+*"` (uptime) or `curl "http://127.0.0.1:5525/__scheduled?cron=0+*/6+*+*+*"` (freshness).
 
 ## Monitor data
 
@@ -127,8 +128,9 @@ flowchart LR
 - **Cloudflare Queues (`CHECK_QUEUE`)**:
   - Producer/consumer queue `bettergovph-status-checks` (`max_batch_size: 1`, `max_retries: 1`) decouples cron scheduling from probe execution so hundreds of monitors can be checked without hitting per-invocation subrequest limits.
 - **Cloudflare Cron Triggers**:
-  - `*/5 * * * *`: Enqueues due monitors (`critical` every 5m, `standard` when `UTC minute % 15 === 0`).
-  - `15 16 * * *` (`00:15 Asia/Manila`): Runs daily retention pruning (`bgovph_prune_checks(30)` and `bgovph_prune_daily_stats(365)`).
+  - `*/5 * * * *`: Enqueues due uptime monitors (`critical` every 5m, `standard` when `UTC minute % 15 === 0`).
+  - `0 */6 * * *`: Enqueues content freshness probes for monitors with `freshnessEnabled: true`.
+  - `15 16 * * *` (`00:15 Asia/Manila`): Runs daily retention pruning (`bgovph_prune_checks(30)`, `bgovph_prune_daily_stats(365)`, and `bgovph_prune_freshness_events(180)`).
 - **Edge Security & Rate Limiting**:
   - `API_RATE_LIMITER` enforces **120 requests / 60s** per `CF-Connecting-IP` (`429` with `Retry-After: 60`).
   - Origin/CORS middleware (`functions/lib/request-security.ts`) restricts browser origins to `bettergov.ph`, `*.bettergov.ph`, `*.workers.dev`, and `localhost`/`127.0.0.1`.
@@ -194,7 +196,7 @@ See [the Supabase notes](supabase/README.md) for local reset (`npm run db:down:l
 ## Deploying
 
 1. Create dedicated Supabase projects for staging and production (Singapore `ap-southeast-1` region recommended).
-2. Apply all migrations in `supabase/migrations/` in order (`20261124000000_bgovph_init.sql`, `20261124000001_bgovph_waf_bars.sql`, `20261125000000_bgovph_dashboard.sql`) to each project.
+2. Apply all migrations in `supabase/migrations/` in order (`20261124000000_bgovph_init.sql`, `20261124000001_bgovph_waf_bars.sql`, `20261125000000_bgovph_dashboard.sql`, `20261126000000_bgovph_freshness.sql`) to each project.
 3. Provision the Cloudflare Queue (`bettergovph-status-checks`, bound as `CHECK_QUEUE` in `wrangler.jsonc`).
 4. Set secrets with `wrangler secret put SUPABASE_URL` and `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`.
 5. Deploy:

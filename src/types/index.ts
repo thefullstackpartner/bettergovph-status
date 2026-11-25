@@ -1,6 +1,34 @@
 export type CheckStatus = 'up' | 'degraded' | 'down';
 export type MonitorTier = 'critical' | 'standard';
 export type MonitorSource = 'curated' | 'bettergov-websites';
+export type FreshnessStatus = 'fresh' | 'stale' | 'unknown';
+export type FreshnessSignalSource =
+  | 'api'
+  | 'sitemap'
+  | 'rss'
+  | 'meta'
+  | 'http_header'
+  | 'content_hash';
+
+export interface MonitorFreshness {
+  enabled: boolean;
+  status: FreshnessStatus;
+  signalSource: FreshnessSignalSource | null;
+  contentUpdatedAt: string | null;
+  lastChangedAt: string | null;
+  lastCheckedAt: string | null;
+  changeCount30d: number;
+  changeCount90d: number;
+  probeError: string | null;
+}
+
+export interface FreshnessEvent {
+  id: number;
+  monitor_slug: string;
+  detected_at: string;
+  signal_source: FreshnessSignalSource;
+  content_updated_at: string | null;
+}
 
 export interface Category {
   slug: string;
@@ -45,12 +73,14 @@ export interface MonitorSummary {
   lastColo: string | null;
   uptime24h: number | null;
   avgMs24h: number | null;
+  freshness?: MonitorFreshness;
   bars90d: DailyBar[];
   hourly24h?: HourlyBar[];
 }
 
 export interface SummaryResponse {
   generatedAt: string;
+  freshnessStaleDays?: number;
   counts: {
     total: number;
     up: number;
@@ -58,6 +88,9 @@ export interface SummaryResponse {
     down: number;
     unknown: number;
     openIncidents: number;
+    freshnessMonitored?: number;
+    fresh?: number;
+    stale?: number;
   };
   categories: Category[];
   monitors: MonitorSummary[];
@@ -85,6 +118,8 @@ export interface CheckPoint {
 export interface MonitorDetailResponse {
   monitor: MonitorSummary;
   incidents: Incident[];
+  freshnessEvents?: FreshnessEvent[];
+  freshnessStaleDays?: number;
 }
 
 export interface MonitorHistoryResponse {

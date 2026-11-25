@@ -1,5 +1,13 @@
 export type CheckStatus = 'up' | 'degraded' | 'down';
 export type MonitorTier = 'critical' | 'standard';
+export type FreshnessStatus = 'fresh' | 'stale' | 'unknown';
+export type FreshnessSignalSource =
+  | 'api'
+  | 'sitemap'
+  | 'rss'
+  | 'meta'
+  | 'http_header'
+  | 'content_hash';
 
 export interface MonitorDefinition {
   slug: string;
@@ -18,6 +26,7 @@ export interface MonitorDefinition {
   forbiddenKeywords?: string[];
   source?: 'curated' | 'bettergov-websites';
   enabled?: boolean;
+  freshnessEnabled?: boolean;
 }
 
 export interface CategoryDefinition {
@@ -41,8 +50,20 @@ export interface CheckResult {
   colo: string | null;
 }
 
+export interface FreshnessResult {
+  monitor_slug: string;
+  checked_at: string;
+  signal_source: FreshnessSignalSource | null;
+  content_updated_at: string | null;
+  content_hash: string | null;
+  etag: string | null;
+  http_last_modified: string | null;
+  probe_error: string | null;
+}
+
 export interface BatchMessage {
   slugs: string[];
+  kind?: 'uptime' | 'freshness';
 }
 
 export interface Env {
@@ -50,6 +71,7 @@ export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
   USER_AGENT?: string;
   TRIGGER_SECRET?: string;
+  FRESHNESS_STALE_DAYS?: string;
   CHECK_QUEUE?: Queue<BatchMessage>;
   API_RATE_LIMITER?: RateLimit;
 }

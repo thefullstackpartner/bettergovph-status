@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { CheckResult, Env } from '../types';
+import type { CheckResult, Env, FreshnessResult } from '../types';
 
 export interface SummaryDbPayload {
   states: Array<{
@@ -43,6 +43,16 @@ export interface SummaryDbPayload {
       down: number;
       avgMs: number;
     }>;
+  }>;
+  freshness?: Array<{
+    monitor_slug: string;
+    signal_source: string | null;
+    content_updated_at: string | null;
+    last_changed_at: string | null;
+    last_checked_at: string | null;
+    change_count_30d: number;
+    change_count_90d: number;
+    probe_error: string | null;
   }>;
   openIncidents: number;
 }
@@ -253,4 +263,48 @@ export async function fetchMonitorHistory(
   const points = rows.filter((_, i) => i % step === 0 || i === rows.length - 1);
 
   return { points, daily: [] };
+}
+
+export async function recordFreshness(
+  env: Env,
+  results: FreshnessResult[]
+): Promise<void> {
+  if (results.length === 0) return;
+  const supabase = getSupabase(env);
+  const { error } = await supabase.rpc('bgovph_record_freshness', {
+    p_results: results,
+  });
+  if (error) {
+    throw new Error(`bgovph_record_freshness failed: ${error.message}`);
+  }
+}
+
+export async function pruneOldFreshnessEvents(
+  env: Env,
+  days = 180
+): Promise<number> {
+  const supabase = getSupabase(env);
+  const { data, error } = await supabase.rpc('bgovph_prune_freshness_events', {
+    p_days: days,
+  });
+  if (error) {
+    throw new Error(`bgovph_prune_freshness_events failed: ${error.message}`);
+  }
+  return Number(data ?? 0);
+}
+
+export async function fetchMonitorFreshnessEvents(
+  env: Env,
+  slug: string,
+  limit = 20
+) {
+  const supabase = getSupabase(env);
+  const { data, error } = await supabase
+    .from('bgovph_freshness_events')
+    .select('id, monitor_slug, detected_at, signal_source, content_updated_at')
+    .eq('monitor_slug', slug)
+    .order('detected_at', { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
