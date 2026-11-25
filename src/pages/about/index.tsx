@@ -1,4 +1,5 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { GradeBadge } from '../../components/status';
 import {
   Card,
@@ -43,6 +44,15 @@ const AGENT_LINKS = [
 
 const AboutPage: FC = () => {
   useDocumentTitle('About & Methodology | BetterGovPH Status');
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    const target = document.getElementById(hash.slice(1));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [hash]);
 
   return (
     <Container narrow className="space-y-8 py-8">
@@ -72,7 +82,7 @@ const AboutPage: FC = () => {
         your browser. Every check records the Cloudflare colo that executed it.
       </Notice>
 
-      <section>
+      <section id="check-intervals">
         <SectionHeader label="Check Intervals &amp; Status Rules" />
         <Card className="space-y-4 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <ul className="list-disc space-y-2 pl-5">
@@ -126,7 +136,7 @@ const AboutPage: FC = () => {
         </Card>
       </section>
 
-      <section>
+      <section id="content-freshness">
         <SectionHeader label="Content Freshness &amp; Update Frequency" />
         <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <p>

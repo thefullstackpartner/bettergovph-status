@@ -188,8 +188,18 @@ const Home: FC = () => {
                 6 hours using portal-specific API, sitemap, and content-hash
                 probes (marked stale after {data.freshnessStaleDays ?? 30}{' '}
                 days).{' '}
-                <Link to="/about" className="text-ed-navy hover:underline">
-                  Learn more
+                <Link
+                  to="/about#check-intervals"
+                  className="text-ed-navy hover:underline"
+                >
+                  Check intervals
+                </Link>{' '}
+                &amp;{' '}
+                <Link
+                  to="/about#content-freshness"
+                  className="text-ed-navy hover:underline"
+                >
+                  freshness methodology
                 </Link>
                 .
               </p>
