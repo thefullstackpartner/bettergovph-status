@@ -47,8 +47,8 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="text-right font-mono-ed text-xs">
+      <div className="flex w-full flex-col items-start gap-2 border-t border-ed-rule/60 pt-3 sm:w-auto sm:flex-row sm:items-center sm:gap-3 sm:border-t-0 sm:pt-0">
+        <div className="text-left font-mono-ed text-xs sm:text-right">
           <div className="font-medium text-ed-ink">
             {formatMs(monitor.lastResponseMs)}
           </div>
