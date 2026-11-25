@@ -9,7 +9,15 @@
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": [
+      "/api/*",
+      "/llms.txt",
+      "/llms-full.txt",
+      "/robots.txt",
+      "/sitemap.xml",
+      "/status.md",
+      "/.well-known/*"
+    ]
   },
   "queues": {
     "producers": [{ "binding": "CHECK_QUEUE", "queue": "bettergovph-status-checks" }],
@@ -24,7 +32,10 @@
   ],
   "vars": {
     "USER_AGENT": "bettergovph-status/1.0 (+https://bettergovph-status.workers.dev/about)",
-    "FRESHNESS_STALE_DAYS": "30"
+    "FRESHNESS_STALE_DAYS": "30",
+    // Canonical public URL used for absolute links in llms.txt, robots.txt,
+    // sitemap.xml and the OpenAPI spec. Empty = use the request's origin.
+    "SITE_URL": ""
   },
   "env": {
     "staging": {

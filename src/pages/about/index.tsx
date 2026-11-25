@@ -9,6 +9,27 @@ import {
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { SUGGEST_PORTAL_URL } from '../../lib/links';
 
+const AGENT_LINKS = [
+  {
+    href: '/llms.txt',
+    description: 'LLM-friendly index of the site, API, and data (llmstxt.org).',
+  },
+  {
+    href: '/status.md',
+    description:
+      'Live status as compact Markdown: what is down, slow, or blocked right now.',
+  },
+  {
+    href: '/api/openapi.json',
+    description: 'OpenAPI 3.1 spec for the JSON API (tool / function calling).',
+  },
+  {
+    href: '/api/monitors?view=lite&status=down',
+    description:
+      'Filterable JSON list of monitors (status, category, tier, q).',
+  },
+];
+
 const AboutPage: FC = () => {
   useDocumentTitle('About & Methodology | BetterGovPH Status');
 
@@ -20,8 +41,8 @@ const AboutPage: FC = () => {
           How BetterGovPH Status Works
         </h1>
         <p className="mt-3 font-sans-ed text-base leading-relaxed text-ed-ink-2">
-          BetterGovPH Status is a volunteer-run, open-source monitor tracking the
-          availability and response times of Philippine government online
+          BetterGovPH Status is a volunteer-run, open-source monitor tracking
+          the availability and response times of Philippine government online
           portals and services from Cloudflare&apos;s edge.
         </p>
       </div>
@@ -29,16 +50,15 @@ const AboutPage: FC = () => {
       <Notice tone="info">
         <strong>Check origin &amp; WAF caveat:</strong> Probes run from
         Cloudflare&apos;s global network (typically Singapore, Hong Kong, or
-        nearby APAC PoPs). Some government portals restrict datacenter IP
-        ranges or place JavaScript WAF challenges (such as Cloudflare Bot Fight
-        Mode or AWS WAF) in front of their pages. Plain HTTP probes cannot
-        execute JavaScript challenges, so WAF-blocked portals are flagged as{' '}
-        <strong>Probe Blocked (WAF)</strong> (<code>degraded</code>{' '}
-        internally) rather than Down. Because the firewall blocks our probe
-        before it reaches the origin server, we cannot see whether the portal
-        behind it is operational or under maintenance—it may still be accessible
-        normally in your browser. Every check records the Cloudflare colo that
-        executed it.
+        nearby APAC PoPs). Some government portals restrict datacenter IP ranges
+        or place JavaScript WAF challenges (such as Cloudflare Bot Fight Mode or
+        AWS WAF) in front of their pages. Plain HTTP probes cannot execute
+        JavaScript challenges, so WAF-blocked portals are flagged as{' '}
+        <strong>Probe Blocked (WAF)</strong> (<code>degraded</code> internally)
+        rather than Down. Because the firewall blocks our probe before it
+        reaches the origin server, we cannot see whether the portal behind it is
+        operational or under maintenance—it may still be accessible normally in
+        your browser. Every check records the Cloudflare colo that executed it.
       </Notice>
 
       <section>
@@ -52,10 +72,10 @@ const AboutPage: FC = () => {
               <strong>Critical</strong> across the dashboard.
             </li>
             <li>
-              <strong>Standard portals (15-minute interval):</strong> Agency
-              and LGU/SUC websites imported from the BetterGov.ph directory,
-              checked at every 15-minute mark (<code>:00</code>,{' '}
-              <code>:15</code>, <code>:30</code>, <code>:45</code>).
+              <strong>Standard portals (15-minute interval):</strong> Agency and
+              LGU/SUC websites imported from the BetterGov.ph directory, checked
+              at every 15-minute mark (<code>:00</code>, <code>:15</code>,{' '}
+              <code>:30</code>, <code>:45</code>).
             </li>
             <li>
               <strong>Operational:</strong> HTTP 2xx or 3xx response within
@@ -82,9 +102,9 @@ const AboutPage: FC = () => {
               maintenance&rdquo;) since citizens cannot transact.
             </li>
             <li>
-              <strong>Incidents &amp; Retention:</strong> A portal&apos;s
-              status flips to <strong>Down</strong> immediately on the 1st
-              failed check, while an incident opens after{' '}
+              <strong>Incidents &amp; Retention:</strong> A portal&apos;s status
+              flips to <strong>Down</strong> immediately on the 1st failed
+              check, while an incident opens after{' '}
               <strong>2 consecutive down checks</strong> (to filter out brief
               one-off blips) and resolves after{' '}
               <strong>2 consecutive operational/degraded checks</strong>. Raw
@@ -114,12 +134,11 @@ const AboutPage: FC = () => {
               fingerprints (stripping volatile CSRF/nonce tokens and scripts).
             </li>
             <li>
-              <strong>Calculated staleness (default 30 days):</strong>{' '}
-              Freshness status (<strong>Fresh</strong> vs.{' '}
-              <strong>Stale</strong>) is calculated dynamically at read time
-              from the most recent detected update or content change against a
-              configurable threshold (<code>FRESHNESS_STALE_DAYS</code>, default{' '}
-              <code>30</code> days).
+              <strong>Calculated staleness (default 30 days):</strong> Freshness
+              status (<strong>Fresh</strong> vs. <strong>Stale</strong>) is
+              calculated dynamically at read time from the most recent detected
+              update or content change against a configurable threshold (
+              <code>FRESHNESS_STALE_DAYS</code>, default <code>30</code> days).
             </li>
             <li>
               <strong>Independent from uptime:</strong> Stale content never
@@ -136,9 +155,9 @@ const AboutPage: FC = () => {
         <SectionHeader label="Uptime Bar Color Legend" />
         <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
           <p>
-            Each vertical bar represents one hour (24h view) or one day
-            (45d/90d view) in Asia/Manila time, colored by the checks recorded
-            during that window:
+            Each vertical bar represents one hour (24h view) or one day (45d/90d
+            view) in Asia/Manila time, colored by the checks recorded during
+            that window:
           </p>
           <ul className="space-y-2">
             <li className="flex items-start gap-2.5">
@@ -284,6 +303,42 @@ const AboutPage: FC = () => {
             <strong>Probe Blocked (WAF)</strong>. If you manage a government
             portal and need us to adjust a check endpoint, expected status
             codes, or opt out, please open an issue in the GitHub repository.
+          </p>
+        </Card>
+      </section>
+
+      <section>
+        <SectionHeader label="For Developers &amp; AI Agents" />
+        <Card className="space-y-3 font-sans-ed text-sm leading-relaxed text-ed-ink-2">
+          <p>
+            All status data is public and free to use. Developers, AI
+            assistants, and agents can read it directly without scraping this
+            page:
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            {AGENT_LINKS.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  className="font-medium text-ed-navy underline underline-offset-2 hover:text-ed-navy-ink"
+                >
+                  <code className="font-mono-ed text-xs">{link.href}</code>
+                </a>{' '}
+                — {link.description}
+              </li>
+            ))}
+          </ul>
+          <p>
+            AI assistants that fetch pages to answer a user&apos;s question are
+            welcome. Collecting this content to train AI models is not permitted
+            (see{' '}
+            <a
+              href="/robots.txt"
+              className="font-medium text-ed-navy underline underline-offset-2 hover:text-ed-navy-ink"
+            >
+              robots.txt
+            </a>
+            ). The API is rate-limited to 120 requests per minute per IP.
           </p>
         </Card>
       </section>

@@ -20,28 +20,35 @@ export default defineConfig({
       ],
     },
     proxy: {
-      '^/api/(summary|dashboard|monitors(?:/.*)?|incidents)(?:\\?|$)': {
-        target: 'http://127.0.0.1:5525',
-        changeOrigin: true,
-        configure(proxy) {
-          proxy.on('proxyReq', (proxyRequest, request) => {
-            const origin = request.headers.origin;
-            if (!origin) return;
-            try {
-              const url = new URL(origin);
-              if (
-                (url.protocol === 'http:' || url.protocol === 'https:') &&
-                url.origin === origin &&
-                url.host === request.headers.host
-              ) {
-                proxyRequest.setHeader('Origin', 'http://localhost:5125');
-              }
-            } catch {
-              // Malformed origins are rejected by the Worker.
-            }
-          });
+      // Agent-discovery files served by the Worker at the site root.
+      '^/(llms\\.txt|llms-full\\.txt|robots\\.txt|sitemap\\.xml|status\\.md|\\.well-known/llms\\.txt)(?:\\?|$)':
+        {
+          target: 'http://127.0.0.1:5525',
+          changeOrigin: true,
         },
-      },
+      '^/api/(summary|dashboard|monitors(?:/.*)?|incidents(?:\\.md)?|status\\.md|openapi\\.json)(?:\\?|$)':
+        {
+          target: 'http://127.0.0.1:5525',
+          changeOrigin: true,
+          configure(proxy) {
+            proxy.on('proxyReq', (proxyRequest, request) => {
+              const origin = request.headers.origin;
+              if (!origin) return;
+              try {
+                const url = new URL(origin);
+                if (
+                  (url.protocol === 'http:' || url.protocol === 'https:') &&
+                  url.origin === origin &&
+                  url.host === request.headers.host
+                ) {
+                  proxyRequest.setHeader('Origin', 'http://localhost:5125');
+                }
+              } catch {
+                // Malformed origins are rejected by the Worker.
+              }
+            });
+          },
+        },
     },
   },
   build: {

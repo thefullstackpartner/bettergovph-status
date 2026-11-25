@@ -16,8 +16,33 @@
       name="description"
       content="Volunteer-run uptime and performance monitoring for Philippine government online portals and services."
     />
+    <!-- Machine-readable alternatives for AI agents, LLMs and API clients -->
+    <link
+      rel="alternate"
+      type="text/markdown"
+      title="Live status (Markdown)"
+      href="/status.md"
+    />
+    <link
+      rel="alternate"
+      type="text/plain"
+      title="LLM index (llms.txt)"
+      href="/llms.txt"
+    />
+    <link
+      rel="service-desc"
+      type="application/openapi+json"
+      href="/api/openapi.json"
+    />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   </head>
   <body>
+    <noscript>
+      BetterGovPH Status needs JavaScript. For a text version of live Philippine
+      government website status, see <a href="/status.md">/status.md</a>, the
+      LLM index at <a href="/llms.txt">/llms.txt</a>, or the public API
+      described at <a href="/api/openapi.json">/api/openapi.json</a>.
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -1,4 +1,14 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
+import { onLlmsFullTxtRequest, onLlmsTxtRequest } from './agent/llms';
+import {
+  onIncidentsMarkdownRequest,
+  onMonitorMarkdownRequest,
+  onStatusMarkdownRequest,
+} from './agent/markdown';
+import { onOpenApiRequest } from './agent/openapi';
+import { onRobotsTxtRequest } from './agent/robots';
+import { onSitemapRequest } from './agent/sitemap';
 import { onDashboardRequest } from './api/dashboard';
 import { onMonitorHistoryRequest } from './api/history';
 import { onIncidentsRequest } from './api/incidents';
@@ -24,27 +34,55 @@ import {
 } from './lib/supabase';
 import type { BatchMessage, Env } from './types';
 
-export const app = new Hono<{ Bindings: Env }>().basePath('/api');
+type AppEnv = { Bindings: Env };
+
+const notFound = (c: Context<AppEnv>) => c.json({ error: 'Not found' }, 404);
+const onError = (err: Error, c: Context<AppEnv>) => {
+  console.error('[api]', err.message);
+  return c.json({ error: 'Internal server error' }, 500);
+};
+
+/** JSON + Markdown API mounted at /api. */
+export const api = new Hono<AppEnv>();
+
+// Static, bundled-data routes: must work even when Supabase is not configured.
+api.get('/openapi.json', onOpenApiRequest);
+
+// Everything below needs Supabase.
+api.use('*', requireSupabaseEnv);
+
+api.get('/summary', onSummaryRequest);
+api.get('/dashboard', onDashboardRequest);
+api.get('/status.md', onStatusMarkdownRequest);
+api.get('/incidents.md', onIncidentsMarkdownRequest);
+api.get('/monitors', onMonitorsRequest);
+api.get('/monitors/:slug{[a-z0-9-]+\\.md}', onMonitorMarkdownRequest);
+api.get('/monitors/:slug{[a-z0-9-]+}', onMonitorDetailRequest);
+api.get('/monitors/:slug{[a-z0-9-]+}/history', onMonitorHistoryRequest);
+api.get('/incidents', onIncidentsRequest);
+api.post('/trigger', onTriggerRequest);
+
+api.notFound(notFound);
+api.onError(onError);
+
+/** Root app: agent-discovery files at the site root + /api. */
+export const app = new Hono<AppEnv>();
 
 app.use('*', rejectDisallowedOrigin);
 app.use('*', corsMiddleware);
 app.use('*', rateLimitMiddleware);
-app.use('*', requireSupabaseEnv);
 
-app.get('/summary', onSummaryRequest);
-app.get('/dashboard', onDashboardRequest);
-app.get('/monitors', onMonitorsRequest);
-app.get('/monitors/:slug{[a-z0-9-]+}', onMonitorDetailRequest);
-app.get('/monitors/:slug{[a-z0-9-]+}/history', onMonitorHistoryRequest);
-app.get('/incidents', onIncidentsRequest);
-app.post('/trigger', onTriggerRequest);
+app.get('/llms.txt', onLlmsTxtRequest);
+app.get('/.well-known/llms.txt', onLlmsTxtRequest);
+app.get('/llms-full.txt', onLlmsFullTxtRequest);
+app.get('/robots.txt', onRobotsTxtRequest);
+app.get('/sitemap.xml', onSitemapRequest);
+app.get('/status.md', requireSupabaseEnv, onStatusMarkdownRequest);
 
-app.notFound(c => c.json({ error: 'Not found' }, 404));
+app.route('/api', api);
 
-app.onError((err, c) => {
-  console.error('[api]', err.message);
-  return c.json({ error: 'Internal server error' }, 500);
-});
+app.notFound(notFound);
+app.onError(onError);
 
 export type AppType = typeof app;
 

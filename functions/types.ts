@@ -72,6 +72,8 @@ export interface Env {
   USER_AGENT?: string;
   TRIGGER_SECRET?: string;
   FRESHNESS_STALE_DAYS?: string;
+  /** Canonical public URL (e.g. https://status.example.ph). Empty = request origin. */
+  SITE_URL?: string;
   CHECK_QUEUE?: Queue<BatchMessage>;
   API_RATE_LIMITER?: RateLimit;
 }

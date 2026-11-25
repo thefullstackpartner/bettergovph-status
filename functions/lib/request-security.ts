@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from 'hono';
+import type { Context, MiddlewareHandler } from 'hono';
 import { cors } from 'hono/cors';
 import type { Env } from '../types';
 
@@ -6,6 +6,8 @@ const ALLOWED_EXACT_ORIGINS = new Set([
   'https://bettergov.ph',
   'https://www.bettergov.ph',
 ]);
+
+const READ_METHODS = new Set(['GET', 'HEAD']);
 
 export function isAllowedOrigin(origin: string): boolean {
   if (ALLOWED_EXACT_ORIGINS.has(origin)) return true;
@@ -32,19 +34,37 @@ export function isAllowedOrigin(origin: string): boolean {
   return false;
 }
 
+/**
+ * Public read-only request: GET/HEAD, or a CORS preflight for GET/HEAD.
+ * These are open to any origin so browser-based agents and tools can use the
+ * public data. Mutating endpoints (e.g. POST /api/trigger) stay restricted.
+ */
+export function isPublicReadRequest(c: Context): boolean {
+  const method = c.req.method.toUpperCase();
+  if (READ_METHODS.has(method)) return true;
+  if (method === 'OPTIONS') {
+    const requested = c.req.header('Access-Control-Request-Method');
+    return !requested || READ_METHODS.has(requested.toUpperCase());
+  }
+  return false;
+}
+
 export const rejectDisallowedOrigin: MiddlewareHandler<{
   Bindings: Env;
 }> = async (c, next) => {
   const origin = c.req.header('Origin');
-  if (origin && !isAllowedOrigin(origin)) {
+  if (origin && !isPublicReadRequest(c) && !isAllowedOrigin(origin)) {
     return c.json({ error: 'Origin not allowed' }, 403);
   }
   await next();
 };
 
 export const corsMiddleware = cors({
-  origin: (origin) => (origin && isAllowedOrigin(origin) ? origin : ''),
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  origin: (origin, c) => {
+    if (origin && isAllowedOrigin(origin)) return origin;
+    return isPublicReadRequest(c) ? '*' : null;
+  },
+  allowMethods: ['GET', 'HEAD', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   exposeHeaders: ['RateLimit-Limit'],
 });
@@ -53,7 +73,7 @@ export const rateLimitMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (
   c,
   next
 ) => {
-  if (c.env.API_RATE_LIMITER) {
+  if (c.env?.API_RATE_LIMITER) {
     const ip = c.req.header('CF-Connecting-IP') ?? 'local-fallback';
     const { success } = await c.env.API_RATE_LIMITER.limit({ key: ip });
     if (!success) {
@@ -67,7 +87,7 @@ export const rateLimitMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (
 
   await next();
 
-  if (c.env.API_RATE_LIMITER) {
+  if (c.env?.API_RATE_LIMITER) {
     c.header('RateLimit-Limit', '120');
   }
 };
@@ -76,7 +96,7 @@ export const requireSupabaseEnv: MiddlewareHandler<{ Bindings: Env }> = async (
   c,
   next
 ) => {
-  if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!c.env?.SUPABASE_URL || !c.env?.SUPABASE_SERVICE_ROLE_KEY) {
     const missing = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
     return c.json(
       {

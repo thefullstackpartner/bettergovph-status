@@ -26,14 +26,47 @@ describe('Worker Hono API', () => {
     ]);
   });
 
-  it('rejects disallowed Origin with 403', async () => {
+  it('rejects disallowed Origin with 403 on non-GET requests', async () => {
+    const res = await app.request(
+      'https://bettergovph-status.workers.dev/api/trigger',
+      { method: 'POST', headers: { Origin: 'https://evil.example.com' } },
+      baseEnv
+    );
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'Origin not allowed' });
+  });
+
+  it('allows public GET requests from any Origin with wildcard CORS', async () => {
+    vi.spyOn(supabase, 'fetchSummaryFromDb').mockResolvedValue({
+      states: [],
+      u24: [],
+      bars: [],
+      hourly: [],
+      openIncidents: 0,
+    });
     const res = await app.request(
       '/api/summary',
       { headers: { Origin: 'https://evil.example.com' } },
       baseEnv
     );
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+
+  it('does not grant CORS for POST preflight from foreign Origin', async () => {
+    const res = await app.request(
+      '/api/trigger',
+      {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://evil.example.com',
+          'Access-Control-Request-Method': 'POST',
+        },
+      },
+      baseEnv
+    );
     expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({ error: 'Origin not allowed' });
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
 
   it('handles OPTIONS preflight for allowed Origin', async () => {

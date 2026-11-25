@@ -72,6 +72,26 @@ Local development does not run the 5-minute cron automatically. You can trigger 
 1. Run `npm run check:trigger` for a one-off critical-tier run, `npm run check:freshness` for a one-off content freshness run, `npm run check:watch` to run critical checks every 5 minutes, `npm run check:freshness:watch` to watch freshness on an interval, or `npm run check:watch:all` to cycle through critical, standard (every 15m), and freshness (every 6h) checks together.
 2. Call Wrangler's scheduled endpoint: `curl "http://127.0.0.1:5525/__scheduled?cron=*/5+*+*+*+*"` (uptime) or `curl "http://127.0.0.1:5525/__scheduled?cron=0+*/6+*+*+*"` (freshness).
 
+## AI agents & LLMs
+
+The status data is public and served in agent-friendly formats. The SPA itself needs JavaScript, so agents should use these endpoints instead:
+
+| Endpoint                      | Format                                    | Purpose                                                                |
+| ----------------------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
+| `/llms.txt`                   | text ([llmstxt.org](https://llmstxt.org)) | LLM index of the site, API and data                                    |
+| `/llms-full.txt`              | text                                      | `llms.txt` + field dictionary, categories, full monitor catalog        |
+| `/status.md`                  | Markdown                                  | Live overall status: what is down / slow / WAF-blocked, open incidents |
+| `/api/monitors/{slug}.md`     | Markdown                                  | One service: status, 14-day history, incidents, freshness              |
+| `/api/incidents.md`           | Markdown                                  | Incidents (`?status=open`, `?page=N`)                                  |
+| `/api/openapi.json`           | OpenAPI 3.1                               | Machine-readable API contract for tool / function calling              |
+| `/api/monitors?view=lite`     | JSON                                      | Filterable monitor list (`status`, `category`, `tier`, `q`)            |
+| `/robots.txt`, `/sitemap.xml` | text / XML                                | Crawler policy and page index                                          |
+
+- Public GET endpoints allow CORS from any origin. `POST /api/trigger` stays locked.
+- `robots.txt` allows AI assistants that fetch pages to answer users (ChatGPT-User, OAI-SearchBot, Claude-User, PerplexityBot, …). It blocks AI-training crawlers (GPTBot, ClaudeBot, Google-Extended, CCBot, …) and publishes `Content-Signal: search=yes, ai-input=yes, ai-train=no`.
+- Absolute URLs come from the `SITE_URL` var in `wrangler.jsonc`. If it is empty, the request origin is used.
+- Coding agents contributing to this repo should read [AGENTS.md](AGENTS.md).
+
 ## Monitor data
 
 Monitor definitions live in committed JSON files validated by JSON Schema:

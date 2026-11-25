@@ -3,3 +3,6 @@ SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_SERVICE_ROLE_KEY=your-local-or-project-service-role-key
 # Optional: require Authorization: Bearer <TRIGGER_SECRET> on POST /api/trigger
 # TRIGGER_SECRET=
+# Optional: canonical public URL for absolute links in llms.txt / robots.txt /
+# sitemap.xml / OpenAPI. Leave unset to use the request origin.
+# SITE_URL=http://127.0.0.1:5525
