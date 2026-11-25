@@ -50,8 +50,11 @@ const ResponseTimeChart: FC<Props> = ({ range, points, daily }) => {
           />
           <YAxis
             unit=" ms"
+            domain={[0, 15000]}
+            ticks={[0, 3000, 6000, 9000, 12000, 15000]}
+            allowDataOverflow
             tick={{ fontSize: 11, fill: '#252629' }}
-            width={64}
+            width={72}
           />
           <Tooltip
             formatter={(val: number) => [`${val} ms`, 'Response time']}
