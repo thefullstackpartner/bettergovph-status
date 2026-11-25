@@ -21,7 +21,7 @@ export default defineConfig({
     },
     proxy: {
       // Agent-discovery files served by the Worker at the site root.
-      '^/(llms\\.txt|llms-full\\.txt|robots\\.txt|sitemap\\.xml|status\\.md|\\.well-known/llms\\.txt)(?:\\?|$)':
+      '^/(llms\\.txt|llms-full\\.txt|robots\\.txt|sitemap\\.xml|status\\.md|incidents\\.rss|\\.well-known/llms\\.txt)(?:\\?|$)':
         {
           target: 'http://127.0.0.1:5525',
           changeOrigin: true,

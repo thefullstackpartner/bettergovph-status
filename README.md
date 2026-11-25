@@ -83,6 +83,8 @@ The status data is public and served in agent-friendly formats. The SPA itself n
 | `/status.md`                  | Markdown                                  | Live overall status: what is down / slow / WAF-blocked, open incidents |
 | `/api/monitors/{slug}.md`     | Markdown                                  | One service: status, 14-day history, incidents, freshness              |
 | `/api/incidents.md`           | Markdown                                  | Incidents (`?status=open`, `?page=N`)                                  |
+| `/incidents.rss`              | RSS 2.0 XML                               | Outage incidents feed (`?status=open` for ongoing only)                |
+| `/api/monitors/{slug}/feed.xml` | RSS 2.0 XML                             | Per-monitor outage incidents feed                                      |
 | `/api/openapi.json`           | OpenAPI 3.1                               | Machine-readable API contract for tool / function calling              |
 | `/api/monitors?view=lite`     | JSON                                      | Filterable monitor list (`status`, `category`, `tier`, `q`)            |
 | `/robots.txt`, `/sitemap.xml` | text / XML                                | Crawler policy and page index                                          |

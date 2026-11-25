@@ -1,5 +1,9 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import {
+  onIncidentsRssRequest,
+  onMonitorFeedRequest,
+} from './agent/feeds';
 import { onLlmsFullTxtRequest, onLlmsTxtRequest } from './agent/llms';
 import {
   onIncidentsMarkdownRequest,
@@ -57,6 +61,7 @@ api.get('/status.md', onStatusMarkdownRequest);
 api.get('/incidents.md', onIncidentsMarkdownRequest);
 api.get('/monitors', onMonitorsRequest);
 api.get('/monitors/:slug{[a-z0-9-]+\\.md}', onMonitorMarkdownRequest);
+api.get('/monitors/:slug{[a-z0-9-]+}/feed.xml', onMonitorFeedRequest);
 api.get('/monitors/:slug{[a-z0-9-]+}', onMonitorDetailRequest);
 api.get('/monitors/:slug{[a-z0-9-]+}/history', onMonitorHistoryRequest);
 api.get('/incidents', onIncidentsRequest);
@@ -78,6 +83,7 @@ app.get('/llms-full.txt', onLlmsFullTxtRequest);
 app.get('/robots.txt', onRobotsTxtRequest);
 app.get('/sitemap.xml', onSitemapRequest);
 app.get('/status.md', requireSupabaseEnv, onStatusMarkdownRequest);
+app.get('/incidents.rss', requireSupabaseEnv, onIncidentsRssRequest);
 
 app.route('/api', api);
 

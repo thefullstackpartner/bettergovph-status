@@ -404,12 +404,43 @@ export function buildOpenApiSpec(site: string): Schema {
           responses: { '200': respRef('Markdown') },
         },
       },
+      '/incidents.rss': {
+        get: {
+          operationId: 'getIncidentsRss',
+          tags: ['incidents'],
+          summary: 'Recent outage incidents as an RSS 2.0 feed',
+          parameters: [
+            {
+              name: 'status',
+              in: 'query',
+              schema: { type: 'string', enum: ['all', 'open'], default: 'all' },
+            },
+          ],
+          responses: { '200': respRef('RssFeed') },
+        },
+      },
+      '/api/monitors/{slug}/feed.xml': {
+        get: {
+          operationId: 'getMonitorRssFeed',
+          tags: ['monitors', 'incidents'],
+          summary: 'Outage incidents for one monitor as an RSS 2.0 feed',
+          parameters: [slugParam],
+          responses: {
+            '200': respRef('RssFeed'),
+            '404': { description: 'Monitor not found' },
+          },
+        },
+      },
     },
     components: {
       responses: {
         Markdown: {
           description: 'Markdown document',
           content: { 'text/markdown': { schema: { type: 'string' } } },
+        },
+        RssFeed: {
+          description: 'RSS 2.0 XML feed',
+          content: { 'application/rss+xml': { schema: { type: 'string' } } },
         },
         NotFound: {
           description: 'Not found',

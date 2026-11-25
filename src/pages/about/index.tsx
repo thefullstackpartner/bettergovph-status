@@ -28,6 +28,11 @@ const AGENT_LINKS = [
     description:
       'Filterable JSON list of monitors (status, category, tier, q).',
   },
+  {
+    href: '/incidents.rss',
+    description:
+      'RSS 2.0 feed of outage incidents (?status=open for ongoing only); per-monitor feeds at /api/monitors/{slug}/feed.xml.',
+  },
 ];
 
 const AboutPage: FC = () => {

@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, ExternalLinkIcon } from 'lucide-react';
+import { ArrowLeftIcon, ExternalLinkIcon, RssIcon } from 'lucide-react';
 import {
   Button,
   Card,
@@ -141,7 +141,19 @@ const MonitorDetailPage: FC = () => {
                   <ExternalLinkIcon size={12} />
                 </a>
               </div>
-              <StatusPill status={m.status} error={m.lastError} />
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href={`/api/monitors/${m.slug}/feed.xml`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Subscribe to RSS incident feed for this monitor"
+                  className="inline-flex items-center gap-1.5 border border-white/30 bg-white/10 px-2.5 py-1 font-mono-ed text-[11px] font-semibold uppercase tracking-[0.06em] text-white no-underline transition-colors hover:bg-white/20"
+                >
+                  <RssIcon size={12} />
+                  <span>RSS</span>
+                </a>
+                <StatusPill status={m.status} error={m.lastError} />
+              </div>
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 md:grid-cols-4">

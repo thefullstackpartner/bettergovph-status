@@ -37,6 +37,11 @@ export function buildLlmsTxt(site: string): string {
 - [Incidents](${site}/api/incidents.md): recent outage incidents; \`?status=open\` for ongoing only, \`?page=N\` to paginate
 - [Monitor detail](${site}/api/monitors/{slug}.md): one service — current status, 24h uptime, 14-day history, recent incidents, content freshness
 
+## Feeds (RSS 2.0)
+
+- [All incidents RSS](${site}/incidents.rss): recent outage incidents feed (\`?status=open\` for ongoing only)
+- [Per-monitor RSS](${site}/api/monitors/{slug}/feed.xml): outage incidents feed for a single monitor
+
 ## JSON API
 
 - [OpenAPI 3.1 specification](${site}/api/openapi.json): machine-readable contract for every public endpoint (use for tool/function calling)

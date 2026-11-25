@@ -46,6 +46,16 @@ const Footer: FC = () => {
                 </Link>
               </li>
               <li>
+                <a
+                  href="/incidents.rss"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-ed-ink-2 no-underline hover:text-ed-navy hover:underline"
+                >
+                  Incidents RSS Feed
+                </a>
+              </li>
+              <li>
                 <Link
                   to="/about"
                   className="text-ed-ink-2 no-underline hover:text-ed-navy hover:underline"

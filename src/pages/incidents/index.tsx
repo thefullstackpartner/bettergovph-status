@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from 'react';
+import { RssIcon } from 'lucide-react';
 import {
   Button,
   Container,
@@ -77,6 +78,16 @@ const IncidentsPage: FC = () => {
           >
             Ongoing Only
           </Button>
+          <a
+            href={filter === 'open' ? '/incidents.rss?status=open' : '/incidents.rss'}
+            target="_blank"
+            rel="noreferrer"
+            title="Subscribe to incidents RSS feed"
+            className="inline-flex items-center gap-1.5 border border-ed-rule bg-ed-paper-2 px-2.5 py-1.5 font-mono-ed text-[11px] font-medium text-ed-ink-2 no-underline transition-colors hover:border-ed-navy hover:text-ed-navy"
+          >
+            <RssIcon size={13} />
+            <span>RSS</span>
+          </a>
         </div>
       </div>
 

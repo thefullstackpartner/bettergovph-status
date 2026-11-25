@@ -291,6 +291,74 @@ describe('Markdown status endpoints', () => {
     expect(md).toContain('Open incidents');
     expect(md).toContain('ongoing');
   });
+
+  it('/incidents.rss renders valid RSS 2.0 XML with incidents', async () => {
+    mockData();
+    const res = await app.request(
+      'https://status.test/incidents.rss',
+      {},
+      baseEnv
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('application/rss+xml');
+    const xml = await res.text();
+    expect(xml).toContain('<rss version="2.0"');
+    expect(xml).toContain('href="https://status.test/incidents.rss"');
+    expect(xml).toContain('<item>');
+    expect(xml).toContain(`[Ongoing]`);
+    expect(xml).toContain(`<link>https://status.test/monitors/${downSlug}</link>`);
+    expect(xml).toContain('<guid isPermaLink="false">bgovph-incident-1</guid>');
+  });
+
+  it('/incidents.rss?status=open filters to ongoing incidents in title/selfUrl', async () => {
+    mockData();
+    const res = await app.request(
+      'https://status.test/incidents.rss?status=open',
+      {},
+      baseEnv
+    );
+    expect(res.status).toBe(200);
+    const xml = await res.text();
+    expect(xml).toContain('Incidents (Ongoing)');
+    expect(xml).toContain(
+      'href="https://status.test/incidents.rss?status=open"'
+    );
+  });
+
+  it('/api/monitors/{slug}/feed.xml renders per-monitor RSS and handles empty incidents', async () => {
+    mockData();
+    vi.spyOn(supabase, 'fetchMonitorIncidents').mockResolvedValue([
+      {
+        id: 42,
+        monitor_slug: downSlug,
+        started_at: '2026-11-24T10:00:00Z',
+        resolved_at: '2026-11-24T10:30:00Z',
+        cause: 'timeout',
+      },
+    ]);
+    const res = await app.request(
+      `https://status.test/api/monitors/${downSlug}/feed.xml`,
+      {},
+      baseEnv
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('application/rss+xml');
+    const xml = await res.text();
+    expect(xml).toContain(
+      `href="https://status.test/api/monitors/${downSlug}/feed.xml"`
+    );
+    expect(xml).toContain('[Resolved]');
+    expect(xml).toContain('duration: 30m');
+  });
+
+  it('/api/monitors/{slug}/feed.xml returns 404 for unknown slug', async () => {
+    const res = await app.request(
+      '/api/monitors/no-such-slug-xyz/feed.xml',
+      {},
+      baseEnv
+    );
+    expect(res.status).toBe(404);
+  });
 });
 
 describe('/api/monitors filtering', () => {
