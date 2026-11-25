@@ -383,10 +383,13 @@ const AboutPage: FC = () => {
           <p>
             Letter grades are computed from a{' '}
             <strong>0–100 composite reliability score</strong> combining{' '}
-            <strong>70% availability</strong> (non-down checks),{' '}
-            <strong>15% clean uptime</strong> (fast, non-WAF-blocked checks),
-            and <strong>15% latency</strong> (full points &le; 500 ms, scaling
-            down as response times approach 3 s+):
+            <strong>70% verified availability</strong> (excluding WAF-blocked
+            checks), <strong>15% clean uptime</strong> (fast, non-WAF-blocked
+            checks), and <strong>15% latency</strong> (full points &le; 500 ms,
+            scaling down as response times approach 3 s+). Portals where 95% or
+            more of checks are blocked by a WAF are marked{' '}
+            <GradeBadge grade="N/A" /> (<em>Unverified (WAF)</em>) instead of
+            receiving a grade.
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
             <span className="inline-flex items-center gap-1.5">

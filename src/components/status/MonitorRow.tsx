@@ -12,7 +12,15 @@ type Props = {
   granularity?: 'hourly' | 'daily';
 };
 
-const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
+const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => {
+  const hourlyTotals = (monitor.hourly24h ?? []).reduce(
+    (acc, h) => ({ total: acc.total + h.total, waf: acc.waf + (h.waf ?? 0) }),
+    { total: 0, waf: 0 }
+  );
+  const isWafUnverified24h =
+    hourlyTotals.total > 0 && hourlyTotals.waf / hourlyTotals.total >= 0.95;
+
+  return (
   <div className="border border-ed-rule bg-white p-5 transition-colors hover:border-ed-ink">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
@@ -53,7 +61,7 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
             {formatMs(monitor.lastResponseMs)}
           </div>
           <div className="text-[11px] text-ed-ink-4">
-            {monitor.lastError === 'waf_403'
+            {monitor.lastError === 'waf_403' || isWafUnverified24h
               ? 'WAF 403'
               : monitor.lastError === 'maintenance_scheduled'
                 ? 'Scheduled'
@@ -99,6 +107,7 @@ const MonitorRow: FC<Props> = ({ monitor, granularity = 'hourly' }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default MonitorRow;

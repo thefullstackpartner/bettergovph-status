@@ -85,6 +85,15 @@ const MonitorDetailPage: FC = () => {
   const m = detail?.monitor;
   const categoryInfo = m ? CATEGORIES_BY_SLUG.get(m.category) : undefined;
   const categoryLabel = categoryInfo?.name ?? m?.category;
+  const hourlyTotals = (m?.hourly24h ?? []).reduce(
+    (acc, h) => ({ total: acc.total + h.total, waf: acc.waf + (h.waf ?? 0) }),
+    { total: 0, waf: 0 }
+  );
+  const isWafUnverified24h =
+    (hourlyTotals.total > 0 && hourlyTotals.waf / hourlyTotals.total >= 0.95) ||
+    (m?.status === 'degraded' &&
+      m.lastError === 'waf_403' &&
+      hourlyTotals.total === 0);
 
   return (
     <Container narrow className="py-8">
@@ -175,7 +184,9 @@ const MonitorDetailPage: FC = () => {
                   24h Uptime
                 </div>
                 <div className="mt-1 font-serif-ed text-xl font-bold text-white">
-                  {formatUptime(m.uptime24h)}
+                  {isWafUnverified24h
+                    ? 'Unverified (WAF)'
+                    : formatUptime(m.uptime24h)}
                 </div>
               </div>
               <div>

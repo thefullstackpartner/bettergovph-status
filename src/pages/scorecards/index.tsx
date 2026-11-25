@@ -229,7 +229,22 @@ const ScorecardsPage: FC = () => {
                           {c.monitorCount}
                         </td>
                         <td className="px-4 py-3 font-mono-ed text-xs">
-                          {formatPct(c.availabilityPct)}
+                          {c.wafBlocked ? (
+                            <span className="text-indigo-700">
+                              Unverified (WAF)
+                            </span>
+                          ) : (
+                            <>
+                              {formatPct(c.availabilityPct)}
+                              {c.wafPct !== null &&
+                                c.wafPct !== undefined &&
+                                c.wafPct > 0 && (
+                                  <div className="text-[10px] text-indigo-700">
+                                    {c.wafPct.toFixed(1)}% WAF
+                                  </div>
+                                )}
+                            </>
+                          )}
                         </td>
                         <td className="px-4 py-3 font-mono-ed text-xs">
                           {formatMs(c.avgMs)}
@@ -331,7 +346,22 @@ const ScorecardsPage: FC = () => {
                           <GradeBadge grade={m.grade} score={m.score} />
                         </td>
                         <td className="px-4 py-3 font-mono-ed text-xs">
-                          {formatPct(m.availabilityPct)}
+                          {m.wafBlocked ? (
+                            <span className="text-indigo-700">
+                              Unverified (WAF)
+                            </span>
+                          ) : (
+                            <>
+                              {formatPct(m.availabilityPct)}
+                              {m.wafPct !== null &&
+                                m.wafPct !== undefined &&
+                                m.wafPct > 0 && (
+                                  <div className="text-[10px] text-indigo-700">
+                                    {m.wafPct.toFixed(1)}% WAF
+                                  </div>
+                                )}
+                            </>
+                          )}
                         </td>
                         <td className="px-4 py-3 font-mono-ed text-xs">
                           {formatMs(m.avgMs)}

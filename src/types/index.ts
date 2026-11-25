@@ -172,6 +172,8 @@ export interface ScorecardMonitorRow {
   checksTotal: number;
   availabilityPct: number | null;
   cleanUptimePct: number | null;
+  wafPct?: number | null;
+  wafBlocked?: boolean;
   avgMs: number | null;
   maxMs: number;
   incidentCount: number;
@@ -187,6 +189,8 @@ export interface ScorecardCategoryRow {
   monitorCount: number;
   checksTotal: number;
   availabilityPct: number | null;
+  wafPct?: number | null;
+  wafBlocked?: boolean;
   avgMs: number | null;
   incidentCount: number;
   mttrSec: number | null;

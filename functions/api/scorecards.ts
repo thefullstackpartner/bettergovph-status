@@ -85,6 +85,8 @@ export interface ScorecardMonitorRow {
   checksTotal: number;
   availabilityPct: number | null;
   cleanUptimePct: number | null;
+  wafPct: number | null;
+  wafBlocked: boolean;
   avgMs: number | null;
   maxMs: number;
   incidentCount: number;
@@ -100,6 +102,8 @@ export interface ScorecardCategoryRow {
   monitorCount: number;
   checksTotal: number;
   availabilityPct: number | null;
+  wafPct: number | null;
+  wafBlocked: boolean;
   avgMs: number | null;
   incidentCount: number;
   mttrSec: number | null;
@@ -123,22 +127,25 @@ export function buildScorecardsPayload(
     const inc = incBySlug.get(m.slug);
     const total = Number(st?.total ?? 0);
     const up = Number(st?.up ?? 0);
+    const waf = Number(st?.waf ?? 0);
     const down = Number(st?.down ?? 0);
     const sumMs = Number(st?.sum_ms ?? 0);
     const maxMs = Number(st?.max_ms ?? 0);
+    const wafPct = total > 0 ? roundPct((waf / total) * 100) : null;
+    const wafBlocked = total > 0 && waf / total >= 0.95;
+    const verifiedTotal = total - waf;
     const availabilityPct =
-      total > 0 ? roundPct(((total - down) / total) * 100) : null;
+      !wafBlocked && verifiedTotal > 0
+        ? roundPct(((verifiedTotal - down) / verifiedTotal) * 100)
+        : null;
     const cleanUptimePct = total > 0 ? roundPct((up / total) * 100) : null;
     const avgMs = total > 0 ? Math.round(sumMs / total) : null;
     const incidentCount = Number(inc?.incident_count ?? 0);
     const openIncidents = Number(inc?.open_incidents ?? 0);
     const mttrSec = inc?.mttr_sec ?? null;
-    const score = computeCompositeScore(
-      availabilityPct,
-      cleanUptimePct,
-      avgMs,
-      total
-    );
+    const score = wafBlocked
+      ? null
+      : computeCompositeScore(availabilityPct, cleanUptimePct, avgMs, verifiedTotal);
 
     return {
       slug: m.slug,
@@ -151,13 +158,15 @@ export function buildScorecardsPayload(
       checksTotal: total,
       availabilityPct,
       cleanUptimePct,
+      wafPct,
+      wafBlocked,
       avgMs,
       maxMs,
       incidentCount,
       openIncidents,
       mttrSec,
       score,
-      grade: computeReliabilityGrade(score, total),
+      grade: wafBlocked ? 'N/A' : computeReliabilityGrade(score, verifiedTotal),
     };
   });
 
@@ -168,6 +177,7 @@ export function buildScorecardsPayload(
       monitorCount: number;
       total: number;
       up: number;
+      waf: number;
       down: number;
       sumMs: number;
       incidents: number;
@@ -181,6 +191,7 @@ export function buildScorecardsPayload(
       monitorCount: 0,
       total: 0,
       up: 0,
+      waf: 0,
       down: 0,
       sumMs: 0,
       incidents: 0,
@@ -189,6 +200,7 @@ export function buildScorecardsPayload(
     cur.monitorCount += 1;
     cur.total += Number(st?.total ?? 0);
     cur.up += Number(st?.up ?? 0);
+    cur.waf += Number(st?.waf ?? 0);
     cur.down += Number(st?.down ?? 0);
     cur.sumMs += Number(st?.sum_ms ?? 0);
     cur.incidents += row.incidentCount;
@@ -198,8 +210,13 @@ export function buildScorecardsPayload(
 
   const categoryRows: ScorecardCategoryRow[] = Array.from(catAcc.entries())
     .map(([slug, acc]) => {
+      const wafPct = acc.total > 0 ? roundPct((acc.waf / acc.total) * 100) : null;
+      const wafBlocked = acc.total > 0 && acc.waf / acc.total >= 0.95;
+      const verifiedTotal = acc.total - acc.waf;
       const availabilityPct =
-        acc.total > 0 ? roundPct(((acc.total - acc.down) / acc.total) * 100) : null;
+        !wafBlocked && verifiedTotal > 0
+          ? roundPct(((verifiedTotal - acc.down) / verifiedTotal) * 100)
+          : null;
       const cleanUptimePct =
         acc.total > 0 ? roundPct((acc.up / acc.total) * 100) : null;
       const avgMs = acc.total > 0 ? Math.round(acc.sumMs / acc.total) : null;
@@ -209,23 +226,27 @@ export function buildScorecardsPayload(
               acc.mttrValues.reduce((a, b) => a + b, 0) / acc.mttrValues.length
             )
           : null;
-      const score = computeCompositeScore(
-        availabilityPct,
-        cleanUptimePct,
-        avgMs,
-        acc.total
-      );
+      const score = wafBlocked
+        ? null
+        : computeCompositeScore(
+            availabilityPct,
+            cleanUptimePct,
+            avgMs,
+            verifiedTotal
+          );
       return {
         category: slug,
         categoryName: categoryMap.get(slug)?.name ?? slug,
         monitorCount: acc.monitorCount,
         checksTotal: acc.total,
         availabilityPct,
+        wafPct,
+        wafBlocked,
         avgMs,
         incidentCount: acc.incidents,
         mttrSec,
         score,
-        grade: computeReliabilityGrade(score, acc.total),
+        grade: wafBlocked ? 'N/A' : computeReliabilityGrade(score, verifiedTotal),
       };
     })
     .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));

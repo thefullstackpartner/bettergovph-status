@@ -73,6 +73,34 @@ describe('Scorecards & CSV export', () => {
     expect(payload.summary.avgMttrSec).toBe(420);
   });
 
+  it('marks 95%+ WAF-blocked monitors as unverified N/A instead of 100% available', () => {
+    const payload = buildScorecardsPayload(
+      {
+        days: 30,
+        monitors: [
+          {
+            monitor_slug: firstSlug,
+            total: 100,
+            up: 0,
+            degraded: 100,
+            waf: 100,
+            down: 0,
+            sum_ms: 20_000,
+            max_ms: 500,
+          },
+        ],
+        incidents: [],
+      },
+      '30d',
+      'all'
+    );
+    const row = payload.monitors.find(m => m.slug === firstSlug);
+    expect(row?.wafBlocked).toBe(true);
+    expect(row?.availabilityPct).toBeNull();
+    expect(row?.score).toBeNull();
+    expect(row?.grade).toBe('N/A');
+  });
+
   it('escapes commas and quotes in CSV export', () => {
     const csv = scorecardsToCsv([
       {
@@ -86,6 +114,8 @@ describe('Scorecards & CSV export', () => {
         checksTotal: 100,
         availabilityPct: 99.0,
         cleanUptimePct: 98.0,
+        wafPct: 0,
+        wafBlocked: false,
         avgMs: 200,
         maxMs: 800,
         incidentCount: 1,
