@@ -3,6 +3,7 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -66,6 +67,18 @@ const ResponseTimeChart: FC<Props> = ({ range, points, daily }) => {
             stroke="#0b4fd9"
             fill="#e8efff"
             strokeWidth={2}
+          />
+          <ReferenceLine
+            y={15000}
+            stroke="#c8102e"
+            strokeDasharray="4 4"
+            ifOverflow="extendDomain"
+            label={{
+              value: 'Timeout (15,000 ms)',
+              position: 'insideTopRight',
+              fill: '#c8102e',
+              fontSize: 11,
+            }}
           />
         </AreaChart>
       </ResponsiveContainer>

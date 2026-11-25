@@ -6,6 +6,7 @@ import {
   Card,
   Container,
   Eyebrow,
+  InfoHint,
   Notice,
   SectionHeader,
 } from '../../components/ui';
@@ -151,12 +152,18 @@ const MonitorDetailPage: FC = () => {
                 </div>
               </div>
               <div>
-                <div className="font-mono-ed text-[11px] uppercase text-white/60">
-                  Last Check (Colo)
+                <div className="inline-flex items-center gap-1 font-mono-ed text-[11px] uppercase text-white/60">
+                  <span>Last Check (Probe Location)</span>
+                  <InfoHint
+                    label="Probe location"
+                    align="right"
+                    tone="onDark"
+                    text="Checks run from Cloudflare's global edge network (e.g., LAX = Los Angeles, SJC = San Jose, SEA = Seattle, MNL = Manila). Latency and firewall blocks can vary by probe location."
+                  />
                 </div>
                 <div className="mt-1 font-mono-ed text-xs text-white/85">
                   {formatManilaTimestamp(m.lastCheckedAt)}
-                  {m.lastColo ? ` (${m.lastColo})` : ''}
+                  {m.lastColo ? ` · Edge: ${m.lastColo}` : ''}
                 </div>
                 <div className="mt-1 font-mono-ed text-[11px] text-white/65">
                   {m.tier === 'critical'
