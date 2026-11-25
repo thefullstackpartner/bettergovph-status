@@ -1,4 +1,5 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   CategoryLeaderboard,
   DashboardKpiStrip,
@@ -29,12 +30,34 @@ const TIERS: Array<{ value: DashboardTierFilter; label: string }> = [
 
 const DashboardPage: FC = () => {
   useDocumentTitle('Analytics Dashboard | BetterGovPH Status');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [range, setRange] = useState<DashboardRange>('30d');
   const [tier, setTier] = useState<DashboardTierFilter>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const selectedCategory = searchParams.get('category') ?? 'all';
 
   const { data, loading, error } = useDashboard(range, tier);
   const { data: summary } = useSummary();
+
+  const initialCategoryRef = useRef(searchParams.get('category'));
+  useEffect(() => {
+    if (
+      data &&
+      initialCategoryRef.current &&
+      initialCategoryRef.current !== 'all'
+    ) {
+      initialCategoryRef.current = null;
+      document
+        .getElementById('monitor-leaderboard')
+        ?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    }
+  }, [data]);
+
+  const setSelectedCategory = (slug: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (!slug || slug === 'all') next.delete('category');
+    else next.set('category', slug);
+    setSearchParams(next, { replace: true });
+  };
 
   const handleSelectCategory = (slug: string) => {
     setSelectedCategory(slug);

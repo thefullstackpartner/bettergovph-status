@@ -109,4 +109,25 @@ describe('DashboardPage', () => {
       screen.getByRole('button', { name: /clear category filter/i })
     ).toBeInTheDocument();
   });
+
+  it('initializes and clears the category filter from URL search params', async () => {
+    render(
+      <MemoryRouter initialEntries={['/?category=tax-revenue']}>
+        <DashboardPage />
+      </MemoryRouter>
+    );
+
+    await screen.findByText(/category performance/i);
+
+    const categorySelect = screen.getByLabelText(
+      /filter leaderboard by category/i
+    ) as HTMLSelectElement;
+    expect(categorySelect.value).toBe('tax-revenue');
+
+    const clearBtn = screen.getByRole('button', {
+      name: /clear category filter/i,
+    });
+    fireEvent.click(clearBtn);
+    expect(categorySelect.value).toBe('all');
+  });
 });
